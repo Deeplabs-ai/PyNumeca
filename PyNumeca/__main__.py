@@ -12,10 +12,10 @@ def main():
     generate_mesh_script(filename=igg_script_path,
                          default_trb_path='/usr/archivio/2032_AI/Rotor37/vN2/rotor_g_v4/rotor_g_v4_Database/_mdb'
                                           '/_flow_000022/_mesh/rotor_g_v4.trb',
-                         geomturbo_path='/home/marco/PyNumeca/rotor_g_v4.geomTurbo',
+                         geomturbo_path='/usr/archivio/2032_AI/Rotor37/PROVA_SECTIONS_NET/000001/flow_000001.geomTurbo',
                          export_path='/home/marco/PyNumeca/a5_project_sample.trb')
 
-    run_igg_script(ui=False, path=igg_script_path)
+    run_igg_script(ui=True, path=igg_script_path)
 
     generate_fine_script(filename=fine_script_path,
                          default_iec_path='/usr/archivio/2032_AI/Rotor37/vN2/rotor_g_v4/rotor_g_v4.iec',
