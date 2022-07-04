@@ -19,8 +19,8 @@ def main():
 
     generate_fine_script(filename=fine_script_path,
                          default_iec_path='/usr/archivio/2032_AI/Rotor37/vN2/rotor_g_v4/rotor_g_v4.iec',
-                         trb_path='/usr/archivio/2032_AI/Rotor37/vN2/rotor_g_v4/rotor_g_v4_Database/_mdb'
-                                          '/_flow_000024/_mesh/rotor_g_v4.trb',
+                         igg_path='/usr/archivio/2032_AI/Rotor37/vN2/rotor_g_v4/rotor_g_v4_Database/_mdb'
+                                          '/_flow_000024/_mesh/rotor_g_v4.igg',
                          export_path='/home/marco/PyNumeca/fine_project_sample.iec')
 
     run_fine_script(ui=True, path=fine_script_path)
