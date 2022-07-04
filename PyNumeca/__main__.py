@@ -23,4 +23,4 @@ def main():
                                           '/_flow_000024/_mesh/rotor_g_v4.trb',
                          export_path='/home/marco/PyNumeca/fine_project_sample.iec')
 
-    run_fine_script(ui=False, path=igg_script_path)
+    run_fine_script(ui=False, path=fine_script_path)
