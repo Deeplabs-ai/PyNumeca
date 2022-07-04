@@ -1,4 +1,3 @@
 import os
 
-#a5_import_geometry_file(os.path.join(os.getcwd(), 'rotor_g_v4.geomTurbo'))
-switch_to_igg()
+a5_init_new_project_from_a_geomTurbo_file(os.path.join(os.getcwd(), 'rotor_g_v4.geomTurbo'))
