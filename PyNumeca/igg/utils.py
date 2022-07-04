@@ -11,6 +11,6 @@ def run_igg_script(path: str, ui: bool = False):
     if not ui:
         command += '-batch '
 
-    command += '-script {0} -debug'.format(path)
+    command += '-script {0}'.format(path)
 
     os.system(command)
