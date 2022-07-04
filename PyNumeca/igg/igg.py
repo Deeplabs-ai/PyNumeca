@@ -1,2 +1,2 @@
 def initialize_from_geom_turbo(path):
-    a5_import_geometry_file(path)
+    a5_init_new_project_from_a_geomTurbo_file(path)
