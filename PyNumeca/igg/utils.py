@@ -13,4 +13,4 @@ def run_igg_script(path: str, ui: bool = False):
 
     command += '-script {0}'.format(path)
 
-    os.system()
+    os.system(command)
