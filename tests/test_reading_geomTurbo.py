@@ -1,38 +1,24 @@
-from PyNumeca.reader.numecaParser import numecaParser
+import logging
 import os
 
-def test_reading_geomTurbo():
-    ciao = numecaParser()
-    ciao2 = numecaParser()
-    ciao3 = numecaParser()
-    ciao.load("tests/C2_rev4.geomTurbo")
-    ciao2.load("tests/Rotor37_Autoblade.geomTurbo")
-    ciao3.load("tests/template_rotor_g_v4.geomTurbo")
-
-    output = ciao.exportNpyArray()
-    print(output.shape)
-
-    output = ciao2.exportNpyArray()
-    print(output.shape)
-
-    output = ciao3.exportNpyArray()
-    print(output.shape)
-
-    print(ciao["ROOT"].keys())
-    print(ciao["ROOT"]["GEOMTURBO"].keys())
-    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"].keys())
-    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["NI_BEGIN_CHANNEL"].key)
-    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["NI_BEGIN_CHANNEL"].tag)
-    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["NI_BEGIN_CHANNEL"].value)
-
-    with open("tests/demofile1.txt", "w") as f:
-        f.write(ciao.outputString())
-    with open("tests/demofile2.txt", "w") as f:
-        f.write(ciao2.outputString())
-    with open("tests/demofile3.txt", "w") as f:
-        f.write(ciao3.outputString())
+from PyNumeca.reader.numecaParser import numecaParser
 
 
-if __name__=="__main__":
-    os.chdir(os.path.dirname(os.getcwd()))
-    test_reading_geomTurbo()
+def test_reading_geomturbo():
+    test = numecaParser()
+    test_2 = numecaParser()
+    test_3 = numecaParser()
+    test.load("data/C2_rev4.geomTurbo")
+    test_2.load("data/Rotor37_Autoblade.geomTurbo")
+    test_3.load("data/template_rotor_g_v4.geomTurbo")
+
+    for i, item in enumerate([test, test_2, test_3]):
+        output = item.exportNpyArray()
+        logging.info(output.shape)
+
+        with open(f"test_file_{i}.txt", "w") as f:
+            f.write(test.outputString())
+
+    for file in os.listdir():
+        if 'test_file' in file:
+            os.remove(file)
