@@ -18,8 +18,12 @@ def test_reading_geomTurbo():
     output = ciao3.exportNpyArray()
     print(output.shape)
 
-
-
+    print(ciao["ROOT"].keys())
+    print(ciao["ROOT"]["GEOMTURBO"].keys())
+    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"].keys())
+    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["NI_BEGIN_CHANNEL"].key)
+    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["NI_BEGIN_CHANNEL"].tag)
+    print(ciao["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["NI_BEGIN_CHANNEL"].value)
 
     with open("tests/demofile1.txt", "w") as f:
         f.write(ciao.outputString())
