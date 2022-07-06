@@ -11,12 +11,15 @@ def test_reading_geomTurbo():
 
     output = ciao.exportNpyArray()
     print(output.shape)
+    ciao.importNpyArray(output[0])
 
     output = ciao2.exportNpyArray()
     print(output.shape)
+    ciao2.importNpyArray(output[0])
 
     output = ciao3.exportNpyArray()
     print(output.shape)
+    ciao3.importNpyArray(output[0])
 
     print(ciao["ROOT"].keys())
     print(ciao["ROOT"]["GEOMTURBO"].keys())
@@ -31,6 +34,7 @@ def test_reading_geomTurbo():
         f.write(ciao2.outputString())
     with open("tests/demofile3.txt", "w") as f:
         f.write(ciao3.outputString())
+
 
 
 if __name__=="__main__":
