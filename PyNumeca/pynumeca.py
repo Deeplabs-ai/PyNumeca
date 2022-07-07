@@ -87,6 +87,7 @@ class Simulation(object):
                         break
                 self._name = new_title
 
+            print('Working directory: ', os.path.join(self.working_path, self._name))
             os.mkdir(os.path.join(self.working_path, self._name))
 
     @property
