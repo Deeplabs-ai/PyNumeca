@@ -21,19 +21,19 @@ class Simulation(object):
         if trb_path is not None:
             self.trb_path = trb_path
 
-        self._name = name
+        self.name = name
 
     def make_mesh(self):
         igg.a5_mesh_from_geomturbo(
-            self._trb_path,
-            self._geomturbo_path,
+            self.trb_path,
+            self.geomturbo_path,
             # new_trb,
-            os.path.join(self._working_path, self._name, self._name + '.igg'))
+            os.path.join(self.working_path, self.name, self.name + '.igg'))
 
     def generate_run(self, index: int = 0):
-        fine.fine_run_from_mesh(self._iec_path,
-                                os.path.join(self._working_path, self._name, self._name + '.igg'),
-                                os.path.join(self._working_path, self._name, self._name + '.iec'),
+        fine.fine_run_from_mesh(self.iec_path,
+                                os.path.join(self.working_path, self.name, self.name + '.igg'),
+                                os.path.join(self.working_path, self.name, self.name + '.iec'),
                                 index=index)
 
     @staticmethod
@@ -43,10 +43,10 @@ class Simulation(object):
     def run_pipeline(self, cores: int = 20, index: int = 0):
         self.make_mesh()
         self.generate_run(index)
-        all_subdirs = [os.path.join(self._working_path, self._name, d) for d in
-                       os.listdir(os.path.join(self._working_path,
-                                               self._name)) if
-                       os.path.isdir(os.path.join(self._working_path, self._name, d))]
+        all_subdirs = [os.path.join(self.working_path, self.name, d) for d in
+                       os.listdir(os.path.join(self.working_path,
+                                               self.name)) if
+                       os.path.isdir(os.path.join(self.working_path, self.name, d))]
         all_runfiles = []
         for d in all_subdirs:
             for f in os.listdir(d):
