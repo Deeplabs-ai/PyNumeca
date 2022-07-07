@@ -31,7 +31,7 @@ class Simulation(object):
             os.path.join(self._working_path, self._name, self._name + '.igg'))
 
     def generate_run(self, index: int = 0):
-        fine.fine_run_from_mesh(self.iec_path,
+        fine.fine_run_from_mesh(self._iec_path,
                                 os.path.join(self._working_path, self._name, self._name + '.igg'),
                                 os.path.join(self._working_path, self._name, self._name + '.iec'),
                                 index=index)
@@ -74,8 +74,8 @@ class Simulation(object):
 
     @name.setter
     def name(self, value):
-        if self.working_path is not None:
-            existing_titles = os.listdir(self.working_path)
+        if self._working_path is not None:
+            existing_titles = os.listdir(self._working_path)
             if value not in existing_titles:
                 self._name = value
             else:
