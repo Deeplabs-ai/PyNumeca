@@ -74,8 +74,8 @@ class Simulation(object):
 
     @name.setter
     def name(self, value):
-        if self._working_path is not None:
-            existing_titles = os.listdir(self._working_path)
+        if self.working_path is not None:
+            existing_titles = os.listdir(self.working_path)
             if value not in existing_titles:
                 self._name = value
             else:
@@ -87,7 +87,8 @@ class Simulation(object):
                         break
                 self._name = new_title
 
-            os.mkdir(os.path.join(self._working_path, self._name))
+            print('CREO ', os.path.join(self.working_path, self._name))
+            os.mkdir(os.path.join(self.working_path, self._name))
 
     @property
     def working_path(self):
