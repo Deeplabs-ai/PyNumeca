@@ -67,7 +67,7 @@ class Simulation(object):
 
     def read_mf(self):
         if self.runfile is not None:
-            mf_path = os.path.splitext(self.runfile) + '.mf'
+            mf_path = os.path.splitext(self.runfile)[0] + '.mf'
             if os.path.exists(mf_path):
                 with open(mf_path, 'r') as f:
                     return f.read()
