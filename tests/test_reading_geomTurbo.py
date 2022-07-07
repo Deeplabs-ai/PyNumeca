@@ -15,6 +15,7 @@ def test_reading_geomturbo():
     for i, item in enumerate([test, test_2, test_3]):
         output = item.exportNpyArray()
         logging.info(output.shape)
+        item.importNpyArray(output[0])
 
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(test.outputString())
