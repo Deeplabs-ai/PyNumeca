@@ -1,78 +1,82 @@
+from collections import OrderedDict
+
+import numpy as np
+
 from PyNumeca.reader.iecEntry import iecEntry
 from PyNumeca.reader.iecGroup import iecGroup
-from collections import OrderedDict
-from PyNumeca.reader.zrCurveEntry import zrCurveEntry
 from PyNumeca.reader.niBladeGeometryEntry import niBladeGeometryEntry
-import numpy as np
-import re
+from PyNumeca.reader.zrCurveEntry import zrCurveEntry
+
+
 class numecaParser(OrderedDict):
-    def __init__(self,filename=""):
+    def __init__(self, filename=""):
+        super().__init__()
         self.fileName = filename
         self.stringData = ""
         self.parsing()
 
-        if (filename!= ""):
+        if filename != "":
             self.load(filename)
 
-    def load(self,filename):
+    def load(self, filename):
         self.fileName = filename
         try:
             with open(self.fileName, 'r') as file:
                 self.stringData = file.readlines()
         except Exception as e:
-            self.errorNotification(e)
+            self.error_notification(e)
         self.parsing()
 
-    def extractD3DParametersString(self):
-        outputString = ""
+    def extract_d3d_parameters_string(self):
+        output_string = ""
         try:
-            number_of_parameters = self['ROOT']\
-                                       ["DESIGN3D_COMPUTATION_0"]\
-                                       ["DATABASE_GENERATION_MINAMO_0"]\
-                                       ["SIMULATION_TASK_MANAGER_0"]\
-                                       ["SIMULATION_TASKS_0"]\
-                                       ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"]\
-                                       ["PARAMETRIC_LAYER_0"]\
-                                       ["PARAMETERS_0"]\
-                                       ["NUMBER_OF_PARAMETERS"].value
+            number_of_parameters = self['ROOT'] \
+                ["DESIGN3D_COMPUTATION_0"] \
+                ["DATABASE_GENERATION_MINAMO_0"] \
+                ["SIMULATION_TASK_MANAGER_0"] \
+                ["SIMULATION_TASKS_0"] \
+                ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
+                ["PARAMETRIC_LAYER_0"] \
+                ["PARAMETERS_0"] \
+                ["NUMBER_OF_PARAMETERS"].value
 
-            outputString += number_of_parameters + "\n"
+            output_string += number_of_parameters + "\n"
 
-            for key, value in self['ROOT']\
-                                  ["DESIGN3D_COMPUTATION_0"]\
-                                  ["DATABASE_GENERATION_MINAMO_0"]\
-                                  ["SIMULATION_TASK_MANAGER_0"]\
-                                  ["SIMULATION_TASKS_0"]\
-                                  ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"]\
-                                  ["PARAMETRIC_LAYER_0"]\
-                                  ["PARAMETERS_0"].items():
-                if ("PARAMETER_" in key):
-                    outputString += value["NAME"].value + "\n"
+            for key, value in self['ROOT'] \
+                    ["DESIGN3D_COMPUTATION_0"] \
+                    ["DATABASE_GENERATION_MINAMO_0"] \
+                    ["SIMULATION_TASK_MANAGER_0"] \
+                    ["SIMULATION_TASKS_0"] \
+                    ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
+                    ["PARAMETRIC_LAYER_0"] \
+                    ["PARAMETERS_0"].items():
+                if "PARAMETER_" in key:
+                    output_string += value["NAME"].value + "\n"
 
-            return (outputString)
+            return output_string
 
-        except:
+        except Exception as e:
             raise CustomError
 
-    def extractD3DParametersList(self):
-        outputList = []
+    def extract_d3d_parameters_list(self):
+        output_list = []
         try:
-            for key, value in self['ROOT']\
-                                  ["DESIGN3D_COMPUTATION_0"]\
-                                  ["DATABASE_GENERATION_MINAMO_0"]\
-                                  ["SIMULATION_TASK_MANAGER_0"]\
-                                  ["SIMULATION_TASKS_0"]\
-                                  ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"]\
-                                  ["PARAMETRIC_LAYER_0"]\
-                                  ["PARAMETERS_0"].items():
-                if ("PARAMETER_" in key):
-                    outputList.append(value["NAME"].value)
+            for key, value in self['ROOT'] \
+                    ["DESIGN3D_COMPUTATION_0"] \
+                    ["DATABASE_GENERATION_MINAMO_0"] \
+                    ["SIMULATION_TASK_MANAGER_0"] \
+                    ["SIMULATION_TASKS_0"] \
+                    ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
+                    ["PARAMETRIC_LAYER_0"] \
+                    ["PARAMETERS_0"].items():
+                if "PARAMETER_" in key:
+                    output_list.append(value["NAME"].value)
 
-            return (outputList)
-        except:
+            return output_list
+        except Exception as e:
             raise CustomError
 
-    def createD3DDefaultParameter(self):
+    def create_d3d_default_parameter(self):
         stringlist = []
         stringlist.append("                     NI_BEGIN\tPARAMETER\n")
         stringlist.append("                        NAME                           DEFAULT\n")
@@ -88,23 +92,23 @@ class numecaParser(OrderedDict):
         stringlist.append("                        UNCERTAIN                      FALSE\n")
         stringlist.append("                        REDUCTION                      FALSE\n")
         stringlist.append("                     NI_END\tPARAMETER\n")
-        return (self.deepTree(stringlist,0))
+        return self.deepTree(stringlist, 0)
 
-    def createD3DParameter(self,name,type,value,min=None,max=None):
-        newParameter,_ = self.createD3DDefaultParameter()
-        newParameter["NAME"].value = name
-        newParameter["PARAMETRIC_TYPE"].value = type
-        newParameter["VALUE"].value = value
+    def create_d3d_parameter(self, name, type, value, min=None, max=None):
+        new_parameter, _ = self.create_d3d_default_parameter()
+        new_parameter["NAME"].value = name
+        new_parameter["PARAMETRIC_TYPE"].value = type
+        new_parameter["VALUE"].value = value
         if min is not None and max is not None:
-            newParameter["VALUE_MIN"].value = min
-            newParameter["VALUE_MAX"].value = max
+            new_parameter["VALUE_MIN"].value = min
+            new_parameter["VALUE_MAX"].value = max
         else:
-            newParameter["VALUE_MIN"].value = value
-            newParameter["VALUE_MAX"].value = value
-        return (newParameter)
+            new_parameter["VALUE_MIN"].value = value
+            new_parameter["VALUE_MAX"].value = value
+        return new_parameter
 
-    def addD3DParameter(self, *arg):
-        parametersLayer = self['ROOT'] \
+    def add_d3d_parameter(self, *arg):
+        parameters_layer = self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
@@ -113,24 +117,24 @@ class numecaParser(OrderedDict):
             ["PARAMETRIC_LAYER_0"] \
             ["PARAMETERS_0"]
 
-        if (len(arg)==1 and isinstance(arg[0],iecGroup)):
-            newParameter = arg[0]
-        elif (len(arg)==3):
-            newParameter = self.createD3DParameter(arg[0],arg[1],arg[2])
-        elif (len(arg)==5):
-            newParameter = self.createD3DParameter(arg[0], arg[1], arg[2], arg[3], arg[4])
+        if len(arg) == 1 and isinstance(arg[0], iecGroup):
+            new_parameter = arg[0]
+        elif len(arg) == 3:
+            new_parameter = self.create_d3d_parameter(arg[0], arg[1], arg[2])
+        elif len(arg) == 5:
+            new_parameter = self.create_d3d_parameter(arg[0], arg[1], arg[2], arg[3], arg[4])
         else:
             raise CustomError
 
-        number_of_parameters = parametersLayer["NUMBER_OF_PARAMETERS"].value
-        new_number_of_parameters = str(int(number_of_parameters)+1)
-        parametersLayer["NUMBER_OF_PARAMETERS"].value = new_number_of_parameters
+        number_of_parameters = parameters_layer["NUMBER_OF_PARAMETERS"].value
+        new_number_of_parameters = str(int(number_of_parameters) + 1)
+        parameters_layer["NUMBER_OF_PARAMETERS"].value = new_number_of_parameters
 
         n = 0
-        newGroupName = "PARAMETER" + "_" + str(n)
-        while newGroupName in parametersLayer:
+        new_group_name = "PARAMETER" + "_" + str(n)
+        while new_group_name in parameters_layer:
             n += 1
-            newGroupName = "PARAMETER" + "_" + str(n)
+            new_group_name = "PARAMETER" + "_" + str(n)
 
         self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
@@ -139,10 +143,11 @@ class numecaParser(OrderedDict):
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
             ["PARAMETRIC_LAYER_0"] \
-            ["PARAMETERS_0"] = self.insert_key_value(parametersLayer,newGroupName, "NI_END_PARAMETERS",newParameter)
+            ["PARAMETERS_0"] = self.insert_key_value(parameters_layer, new_group_name, "NI_END_PARAMETERS",
+                                                     new_parameter)
 
-    def removeD3DParameter(self,number=None):
-        parametersLayer = self['ROOT'] \
+    def remove_d3d_parameter(self, number=None):
+        parameters_layer = self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
@@ -150,19 +155,19 @@ class numecaParser(OrderedDict):
             ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
             ["PARAMETRIC_LAYER_0"] \
             ["PARAMETERS_0"]
-        number_of_parameters = parametersLayer["NUMBER_OF_PARAMETERS"].value
+        number_of_parameters = parameters_layer["NUMBER_OF_PARAMETERS"].value
 
-        if (int(number_of_parameters)>0 and number is None):
-            new_number_of_parameters = str(int(number_of_parameters)-1)
-            parametersLayer["NUMBER_OF_PARAMETERS"].value = new_number_of_parameters
+        if int(number_of_parameters) > 0 and number is None:
+            new_number_of_parameters = str(int(number_of_parameters) - 1)
+            parameters_layer["NUMBER_OF_PARAMETERS"].value = new_number_of_parameters
 
             n = 0
-            lastGroupName = "PARAMETER" + "_" + str(n)
-            while lastGroupName in parametersLayer:
+            last_group_name = "PARAMETER" + "_" + str(n)
+            while last_group_name in parameters_layer:
                 n += 1
-                lastGroupName = "PARAMETER" + "_" + str(n)
+                last_group_name = "PARAMETER" + "_" + str(n)
             n -= 1
-            lastGroupName = "PARAMETER" + "_" + str(n)
+            last_group_name = "PARAMETER" + "_" + str(n)
 
             self['ROOT'] \
                 ["DESIGN3D_COMPUTATION_0"] \
@@ -171,20 +176,20 @@ class numecaParser(OrderedDict):
                 ["SIMULATION_TASKS_0"] \
                 ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
                 ["PARAMETRIC_LAYER_0"] \
-                ["PARAMETERS_0"].pop(lastGroupName)
+                ["PARAMETERS_0"].pop(last_group_name)
 
-        elif (int(number_of_parameters)>0 and (isinstance(number, int) or isinstance(number, str))):
+        elif int(number_of_parameters) > 0 and (isinstance(number, int) or isinstance(number, str)):
 
-            new_number_of_parameters = str(int(number_of_parameters)-1)
-            parametersLayer["NUMBER_OF_PARAMETERS"].value = new_number_of_parameters
+            new_number_of_parameters = str(int(number_of_parameters) - 1)
+            parameters_layer["NUMBER_OF_PARAMETERS"].value = new_number_of_parameters
 
-            if (str(number).isdigit()):
-                lastGroupName = "PARAMETER" + "_" + str(number)
-            elif (number in self.extractD3DParametersList()):
-                lastGroupName = ""
-                for key, value in parametersLayer.items():
-                    if ("PARAMETER_" in key and number == value["NAME"].value):
-                        lastGroupName = key
+            if str(number).isdigit():
+                last_group_name = "PARAMETER" + "_" + str(number)
+            elif number in self.extract_d3d_parameters_list():
+                last_group_name = ""
+                for key, value in parameters_layer.items():
+                    if "PARAMETER_" in key and number == value["NAME"].value:
+                        last_group_name = key
             else:
                 raise CustomError
 
@@ -195,12 +200,13 @@ class numecaParser(OrderedDict):
                 ["SIMULATION_TASKS_0"] \
                 ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
                 ["PARAMETRIC_LAYER_0"] \
-                ["PARAMETERS_0"].pop(lastGroupName)
+                ["PARAMETERS_0"].pop(last_group_name)
 
         else:
             pass
 
-    def insert_key_value(self, a_dict, key, pos_key, value):
+    @staticmethod
+    def insert_key_value(a_dict, key, pos_key, value):
         new_dict = iecGroup()
         for k, v in a_dict.items():
             if k == pos_key:
@@ -209,74 +215,75 @@ class numecaParser(OrderedDict):
         return new_dict
 
     def parsing(self):
-        if isinstance(self.stringData,list) and "GEOMETRY TURBO" in self.stringData[0]:
+        if isinstance(self.stringData, list) and "GEOMETRY TURBO" in self.stringData[0]:
             self.stringData[0] = "GEOMETRY-TURBO\n"
-        self['ROOT'], temp = self.deepTree(self.stringData,0)
-        self['ROOT'] = self.deepReorderZRcurve(self['ROOT'])
-        #self['ROOT'] = self.deepReorderNiBladeGeometry(self['ROOT'])
+        self['ROOT'], temp = self.deepTree(self.stringData, 0)
+        self['ROOT'] = self.deep_reorder_zrcurve(self['ROOT'])
+        # self['ROOT'] = self.deepReorderNiBladeGeometry(self['ROOT'])
 
-    def deepReorderZRcurve(self, group):
-        newGroup = iecGroup()
+    def deep_reorder_zrcurve(self, group):
+        new_group = iecGroup()
         for key, value in group.items():
-            if (isinstance(value, iecGroup) and "zrcurve" in (list(value.items()))[0][0]):
-                newGroup[key] = zrCurveEntry(value)
-            elif (isinstance(value, iecGroup) and any(x in (list(value.items()))[0][0] for x in ["nibladegeometry", "NIBLADEGEOMETRY"])):
-                newGroup[key] = niBladeGeometryEntry(value)
-                #print (key)
-                #newGroup[key] = self.deepReorderZRcurve(value)
-            #    newGroup[key] = niBladeGeometryEntry(value)
-            elif (isinstance(value, iecGroup)):
-                newGroup[key] = self.deepReorderZRcurve(value)
+            if isinstance(value, iecGroup) and "zrcurve" in (list(value.items()))[0][0]:
+                new_group[key] = zrCurveEntry(value)
+            elif (isinstance(value, iecGroup) and any(
+                    x in (list(value.items()))[0][0] for x in ["nibladegeometry", "NIBLADEGEOMETRY"])):
+                new_group[key] = niBladeGeometryEntry(value)
+                # print (key)
+                # new_group[key] = self.deepReorderZRcurve(value)
+            #    new_group[key] = niBladeGeometryEntry(value)
+            elif isinstance(value, iecGroup):
+                new_group[key] = self.deep_reorder_zrcurve(value)
             else:
-                newGroup[key] = value
-        return newGroup
+                new_group[key] = value
+        return new_group
 
-    def deepTree(self, stringData,lineIndex):
+    def deepTree(self, string_data, line_index):
         newcall = True
         group = iecGroup()
-        while lineIndex < len(stringData):
-            lineString = stringData[lineIndex]
+        while line_index < len(string_data):
+            line_string = string_data[line_index]
             entry = iecEntry()
-            entry.parseSimpleEntry(lineString)
-            if (newcall and "NI_BEGIN" in lineString):
-                #key = entry.key + "_" + entry.value
-                if (isinstance(entry.value, list)):
+            entry.parseSimpleEntry(line_string)
+            if newcall and "NI_BEGIN" in line_string:
+                # key = entry.key + "_" + entry.value
+                if isinstance(entry.value, list):
                     key = entry.key + "_" + entry.tag + "_" + entry.value[0]
                 else:
                     key = entry.key + "_" + entry.value
                 group[key] = entry
                 newcall = False
-                lineIndex += 1
-            elif (lineIndex==0 and entry.key == "GEOMETRY-TURBO"):
-                stringData[0] = "GEOMETRY TURBO\n"
-                groupName = "GEOMTURBO"
-                group[groupName], lineIndex = self.deepTree(stringData,lineIndex)
-            elif (lineIndex==0 and entry.value == "TURBO"):
+                line_index += 1
+            elif line_index == 0 and entry.key == "GEOMETRY-TURBO":
+                string_data[0] = "GEOMETRY TURBO\n"
+                group_name = "GEOMTURBO"
+                group[group_name], line_index = self.deepTree(string_data, line_index)
+            elif line_index == 0 and entry.value == "TURBO":
                 key = entry.key + "_" + entry.value
                 group[key] = entry
                 newcall = False
-                lineIndex += 1
-            elif (not newcall and "NI_BEGIN" in lineString):
+                line_index += 1
+            elif not newcall and "NI_BEGIN" in line_string:
                 n = 0
-                if (isinstance(entry.value, list)):
-                    groupName = entry.tag + "_" + entry.value[0] + "_" + str(n)
+                if isinstance(entry.value, list):
+                    group_name = entry.tag + "_" + entry.value[0] + "_" + str(n)
                 else:
-                    groupName = entry.value + "_" + str(n)
-                while groupName in group:
+                    group_name = entry.value + "_" + str(n)
+                while group_name in group:
                     n += 1
-                    if (isinstance(entry.value, list)):
-                        groupName = entry.tag + "_" + entry.value[0] + "_"+ str(n)
+                    if isinstance(entry.value, list):
+                        group_name = entry.tag + "_" + entry.value[0] + "_" + str(n)
                     else:
-                        groupName = entry.value + "_" + str(n)
+                        group_name = entry.value + "_" + str(n)
 
-                group[groupName], lineIndex = self.deepTree(stringData,lineIndex)
-            elif ("NI_END" in lineString):
+                group[group_name], line_index = self.deepTree(string_data, line_index)
+            elif "NI_END" in line_string:
                 key = entry.key + "_" + entry.value
                 group[key] = entry
                 newcall = False
-                lineIndex += 1
-                return (group, lineIndex)
-            elif (lineString.lstrip(' ').startswith(('*','#'))):
+                line_index += 1
+                return group, line_index
+            elif line_string.lstrip(' ').startswith(('*', '#')):
                 n = 0
                 key = 'comment' + "_" + str(n)
                 while key in group:
@@ -284,8 +291,8 @@ class numecaParser(OrderedDict):
                     key = 'comment_' + str(n)
                 group[key] = entry
                 newcall = False
-                lineIndex += 1
-            elif (lineString == "\n"):
+                line_index += 1
+            elif line_string == "\n":
                 n = 0
                 key = 'empty_line' + "_" + str(n)
                 while key in group:
@@ -293,7 +300,7 @@ class numecaParser(OrderedDict):
                     key = 'empty_line_' + str(n)
                 group[key] = entry
                 newcall = False
-                lineIndex += 1
+                line_index += 1
             else:
                 key = entry.key
                 n = 0
@@ -302,16 +309,17 @@ class numecaParser(OrderedDict):
                     key = entry.key + "_" + str(n)
                 group[key] = entry
                 newcall = False
-                lineIndex += 1
+                line_index += 1
 
-        return (group, lineIndex)
+        return group, line_index
 
-    def errorNotification(self,e):
-        print (e)
-        print ("ERRORE DI LETTURA")
+    @staticmethod
+    def error_notification(e):
+        print(e)
+        print("Reading Error Notification")
 
     def outputString(self):
-        return (self["ROOT"].outputString())
+        return self["ROOT"].outputString()
 
     def checkSetup(self):
         simulation_task_manager = self['ROOT'] \
@@ -322,71 +330,72 @@ class numecaParser(OrderedDict):
         simulation_task_manager["MODEL_EXTENSION"].value = "prt"
         simulation_task_manager["CFD_GEOM_EXTENSION"].value = "stp"
 
-        for idx, group in enumerate((simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_PARAM_GEOM_MODEL_0"],
-                                     simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_IGG_AUTOGRID_0"],
-                                     simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_EURANUS_TURBO_0"],
-                                     simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_CFVIEW_0"])):
-
-            group["TASK_PROCESSING"].value = str(int(not(idx % 3))) #Activate only n.0 and n.3
+        for idx, group in enumerate(
+                (simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_PARAM_GEOM_MODEL_0"],
+                 simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_IGG_AUTOGRID_0"],
+                 simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_EURANUS_TURBO_0"],
+                 simulation_task_manager["SIMULATION_TASKS_0"]["SIMULATION_TASK_CFVIEW_0"])):
+            group["TASK_PROCESSING"].value = str(int(not (idx % 3)))  # Activate only n.0 and n.3
             group["CHAIN_TYPE"].value = "EXTERNAL"
             group["IMPORT_SCRIPTS"].value = "1"
 
-    def setParamScript(self,scriptName):
+    def setParamScript(self, script_name):
         self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_PARAM_GEOM_MODEL_0"] \
-            ["EXTERNAL_SCRIPT"].value = '"'+scriptName+'"'
+            ["EXTERNAL_SCRIPT"].value = '"' + script_name + '"'
 
-    def setMeshScript(self,scriptName):
+    def setMeshScript(self, script_name):
         self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_IGG_AUTOGRID_0"] \
-            ["EXTERNAL_SCRIPT"].value = '"'+scriptName+'"'
+            ["EXTERNAL_SCRIPT"].value = '"' + script_name + '"'
 
-    def setSolverScript(self,scriptName):
+    def setSolverScript(self, script_name):
         self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_EURANUS_TURBO_0"] \
-            ["EXTERNAL_SCRIPT"].value = '"'+scriptName+'"'
+            ["EXTERNAL_SCRIPT"].value = '"' + script_name + '"'
 
-    def setPostProScript(self,scriptName):
+    def setPostProScript(self, script_name):
         self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_CFVIEW_0"] \
-            ["EXTERNAL_SCRIPT"].value = '"'+scriptName+'"'
+            ["EXTERNAL_SCRIPT"].value = '"' + script_name + '"'
 
     def createPostProDefaultMacro(self):
         stringlist = []
         stringlist.append("                  NI_BEGIN\tUSER_DEFINED_MACRO\n")
         stringlist.append("                     SOLUTION_FILE                                      3D\n")
-        stringlist.append("                     MACRO_FILE                                         myPath/myScript.py\n")
+        stringlist.append(
+            "                     MACRO_FILE                                         myPath/myScript.py\n")
         stringlist.append("                     DATA_FILE                                          myScript.dat\n")
         stringlist.append("                     QUANTITY_NAME                                      myQuantity\n")
         stringlist.append("                     DIM                                                SCALAR\n")
         stringlist.append("                     ACTIVE                                             1\n")
         stringlist.append("                  NI_END\tUSER_DEFINED_MACRO\n")
-        return (self.deepTree(stringlist,0))
+        return self.deepTree(stringlist, 0)
 
-    def createPostProMacro(self,scriptName):
+    def createPostProMacro(self, script_name):
         new_post_pro_macro, _ = self.createPostProDefaultMacro()
-        new_post_pro_macro["MACRO_FILE"].value = "macro_CFV/"+scriptName
-        new_post_pro_macro["DATA_FILE"].value = scriptName.rsplit('.', 1)[0]+".dat"
-        new_post_pro_macro["QUANTITY_NAME"].value = scriptName.rsplit('.', 1)[0]
-        return (new_post_pro_macro)
+        new_post_pro_macro["MACRO_FILE"].value = "macro_CFV/" + script_name
+        new_post_pro_macro["DATA_FILE"].value = script_name.rsplit('.', 1)[0] + ".dat"
+        new_post_pro_macro["QUANTITY_NAME"].value = script_name.rsplit('.', 1)[0]
+        return new_post_pro_macro
 
-    def addPostProMacro(self, scriptName):
+    def addPostProMacro(self, script_name):
         postProMacroLayer = self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
@@ -395,18 +404,18 @@ class numecaParser(OrderedDict):
             ["SIMULATION_TASK_CFVIEW_0"] \
             ["USER_DEFINED_MACROS_EXTERNAL_0"]
 
-        if (isinstance(scriptName, iecGroup)):
-            newPostProMacro = scriptName
-        elif (isinstance(scriptName, str)):
-            newPostProMacro = self.createPostProMacro(scriptName)
+        if isinstance(script_name, iecGroup):
+            new_post_pro_macro = script_name
+        elif isinstance(script_name, str):
+            new_post_pro_macro = self.createPostProMacro(script_name)
         else:
             raise CustomError
 
         n = 0
-        newGroupName = "USER_DEFINED_MACRO" + "_" + str(n)
-        while newGroupName in postProMacroLayer:
+        new_group_name = "USER_DEFINED_MACRO" + "_" + str(n)
+        while new_group_name in postProMacroLayer:
             n += 1
-            newGroupName = "USER_DEFINED_MACRO" + "_" + str(n)
+            new_group_name = "USER_DEFINED_MACRO" + "_" + str(n)
 
         self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
@@ -415,10 +424,11 @@ class numecaParser(OrderedDict):
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_CFVIEW_0"] \
             ["USER_DEFINED_MACROS_EXTERNAL_0"] = \
-            self.insert_key_value(postProMacroLayer,newGroupName, "NI_END_USER_DEFINED_MACROS_EXTERNAL",newPostProMacro)
+            self.insert_key_value(postProMacroLayer, new_group_name, "NI_END_USER_DEFINED_MACROS_EXTERNAL",
+                                  new_post_pro_macro)
 
     def removePostProMacro(self, number=None):
-        postProMacroLayer = self['ROOT'] \
+        post_pro_macro_layer = self['ROOT'] \
             ["DESIGN3D_COMPUTATION_0"] \
             ["DATABASE_GENERATION_MINAMO_0"] \
             ["SIMULATION_TASK_MANAGER_0"] \
@@ -426,17 +436,17 @@ class numecaParser(OrderedDict):
             ["SIMULATION_TASK_CFVIEW_0"] \
             ["USER_DEFINED_MACROS_EXTERNAL_0"]
 
-        if (number is None):
+        if number is None:
             n = 0
-            lastGroupName = "USER_DEFINED_MACRO" + "_" + str(n)
-            while lastGroupName in postProMacroLayer:
+            last_group_name = "USER_DEFINED_MACRO" + "_" + str(n)
+            while last_group_name in post_pro_macro_layer:
                 n += 1
-                lastGroupName = "USER_DEFINED_MACRO" + "_" + str(n)
+                last_group_name = "USER_DEFINED_MACRO" + "_" + str(n)
             n -= 1
-            lastGroupName = "USER_DEFINED_MACRO" + "_" + str(n)
+            last_group_name = "USER_DEFINED_MACRO" + "_" + str(n)
 
-        elif (isinstance(number, int)):
-            lastGroupName = "USER_DEFINED_MACRO" + "_" + str(number)
+        elif isinstance(number, int):
+            last_group_name = "USER_DEFINED_MACRO" + "_" + str(number)
 
         else:
             raise CustomError
@@ -447,65 +457,66 @@ class numecaParser(OrderedDict):
             ["SIMULATION_TASK_MANAGER_0"] \
             ["SIMULATION_TASKS_0"] \
             ["SIMULATION_TASK_CFVIEW_0"] \
-            ["USER_DEFINED_MACROS_EXTERNAL_0"].pop(lastGroupName)
+            ["USER_DEFINED_MACROS_EXTERNAL_0"].pop(last_group_name)
 
-    def exportNpyArray(self, rowNumber=0, bladeNumber=0):
-        niBladeGeometry = self.retrieveNiBladeGeometry(rowNumber, bladeNumber)
+    def exportNpyArray(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
 
         suction = []
         pressure = []
-        for item in niBladeGeometry.suctionList:
+        for item in ni_blade_geometry.suctionList:
             section = np.vstack([item.X, item.Y, item.Z, np.zeros(item.numberOfPointsInt)]).transpose()
             suction.append(section)
-        for item in niBladeGeometry.pressureList:
+        for item in ni_blade_geometry.pressureList:
             section = np.vstack([item.X, item.Y, item.Z, np.ones(item.numberOfPointsInt)]).transpose()
             section = np.flip(section, axis=0)
             pressure.append(section)
-        return (np.array([(np.asarray(suction), np.asarray(pressure))],dtype=float))
+        return np.array([(np.asarray(suction), np.asarray(pressure))], dtype=float)
 
-    def importNpyArray(self, array,rowNumber=0, bladeNumber=0):
+    def importNpyArray(self, array, row_number=0, blade_number=0):
         # array shape (2,nSections,nPoints,4)
-        niBladeGeometry = self.retrieveNiBladeGeometry(rowNumber, bladeNumber)
-        nSectionsFromArray = array.shape[1]
-        niBladeGeometry.setNumberOfSections(nSectionsFromArray)
-        for idx, suction in enumerate(niBladeGeometry.suctionList):
-            newList = array[0][idx].transpose().tolist()
-            suction.updateArrays(newList[0], newList[1], newList[2])
-        for idx, pressure in enumerate(niBladeGeometry.pressureList):
-            newList = array[1][idx].transpose().tolist()
-            pressure.updateArrays(newList[0][::-1], newList[1][::-1], newList[2][::-1])
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        n_sections_from_array = array.shape[1]
+        ni_blade_geometry.setNumberOfSections(n_sections_from_array)
+        for idx, suction in enumerate(ni_blade_geometry.suctionList):
+            new_list = array[0][idx].transpose().tolist()
+            suction.updateArrays(new_list[0], new_list[1], new_list[2])
+        for idx, pressure in enumerate(ni_blade_geometry.pressureList):
+            new_list = array[1][idx].transpose().tolist()
+            pressure.updateArrays(new_list[0][::-1], new_list[1][::-1], new_list[2][::-1])
 
-    def retrieveNiBladeGeometry(self,rowNumber=0, bladeNumber=0):
-        rowOccurence = -1
-        bladeOccurence = -1
-        rowKey = ""
-        bladeKey = ""
+    def retrieveNiBladeGeometry(self, row_number=0, blade_number=0):
+        row_occurence = -1
+        blade_occurence = -1
+        row_key = ""
+        blade_key = ""
 
         for key in self["ROOT"]["GEOMTURBO"].keys():
             if "nirow" in key or "NIROW" in key:
-                rowOccurence +=1
-                if rowOccurence == rowNumber:
-                    rowKey = key
+                row_occurence += 1
+                if row_occurence == row_number:
+                    row_key = key
 
-        for key in self["ROOT"]["GEOMTURBO"][rowKey].keys():
+        for key in self["ROOT"]["GEOMTURBO"][row_key].keys():
             if "NIBlade" in key or "NIBLADE" in key:
-                bladeOccurence +=1
-                if bladeOccurence == bladeNumber:
-                    bladeKey = key
+                blade_occurence += 1
+                if blade_occurence == blade_number:
+                    blade_key = key
 
-        if (rowKey == ""): print("Row not defined")
-        if (bladeKey == ""): print("Blade not defined")
+        if row_key == "":
+            print("Row not defined")
+        if blade_key == "":
+            print("Blade not defined")
 
-        if ("NIROW" in rowKey): niBladeGeometry = self["ROOT"]["GEOMTURBO"][rowKey][bladeKey]["NIBLADEGEOMETRY_0"]
-        elif ("nirow" in rowKey): niBladeGeometry = self["ROOT"]["GEOMTURBO"][rowKey][bladeKey]["nibladegeometry_0"]
-        else: print("ERROR")
+        if "NIROW" in row_key:
+            ni_blade_geometry = self["ROOT"]["GEOMTURBO"][row_key][blade_key]["NIBLADEGEOMETRY_0"]
+        elif "nirow" in row_key:
+            ni_blade_geometry = self["ROOT"]["GEOMTURBO"][row_key][blade_key]["nibladegeometry_0"]
+        else:
+            print("ERROR")
 
-        return niBladeGeometry
-
-
-
+        return ni_blade_geometry
 
 
 class CustomError(Exception):
     pass
-
