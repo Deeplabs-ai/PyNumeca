@@ -1,17 +1,19 @@
-def generate_mesh_script(filename: str,
-                         default_trb_path: str,
-                         geomturbo_path: str,
-                         export_path: str):
-    code = \
-        """
-a5_open_project("@default_trb_path")
-a5_import_and_replace_geometry_file("@geomturbo_path")
-a5_generate_3d()
-a5_save_project("@export_path")
-""".replace('@default_trb_path', default_trb_path).replace('@geomturbo_path', geomturbo_path).replace(
-            '@export_path', export_path)
+import os
+from PyNumeca.constants import constants
 
-    with open(filename, 'w') as f:
-        f.write(code)
 
+def a5_mesh_from_geomturbo(source_trb_path: str,
+                           geomturbo_path: str,
+                           output_igg_path: str,
+                           igg_version: str = constants.version,
+                           cores: int = 1,
+                           ):
+
+    cmd = f"igg{igg_version}" + " -print -real-batch -autogrid5" + " -numproc " + str(
+        cores) + " -trb " + '"' + source_trb_path + '"' +\
+          " -geomTurbo " + '"' + geomturbo_path + '"' + " -mesh " +\
+          '"' + output_igg_path + '"'
+
+    print("Running command '" + cmd + "'")
+    os.system(cmd)
 
