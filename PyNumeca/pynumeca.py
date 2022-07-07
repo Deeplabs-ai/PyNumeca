@@ -13,13 +13,13 @@ class Simulation(object):
                  trb_path: str = None):
 
         if working_path is not None:
-            self._working_path = working_path
+            self.working_path = working_path
         if geomturbo_path is not None:
-            self._geomturbo_path = geomturbo_path
+            self.geomturbo_path = geomturbo_path
         if iec_path is not None:
-            self._iec_path = iec_path
+            self.iec_path = iec_path
         if trb_path is not None:
-            self._trb_path = trb_path
+            self.trb_path = trb_path
 
         self._name = name
 
@@ -100,6 +100,7 @@ class Simulation(object):
         else:
             try:
                 os.mkdir(value)
+                self._working_path = value
             except Exception as e:
                 print(f'"{value}" error: {e}')
 
