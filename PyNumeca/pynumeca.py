@@ -82,12 +82,11 @@ class Simulation(object):
                 index = 0
                 while True:
                     index += 1
-                    new_title = value + f' ({index})'
+                    new_title = value + f'_{index}'
                     if new_title not in existing_titles:
                         break
                 self._name = new_title
 
-            print('CREO ', os.path.join(self.working_path, self._name))
             os.mkdir(os.path.join(self.working_path, self._name))
 
     @property
