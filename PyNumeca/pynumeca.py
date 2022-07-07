@@ -13,27 +13,27 @@ class Simulation(object):
                  trb_path: str = None):
 
         if working_path is not None:
-            self.working_path = working_path
+            self._working_path = working_path
         if geomturbo_path is not None:
-            self.geomturbo_path = geomturbo_path
+            self._geomturbo_path = geomturbo_path
         if iec_path is not None:
-            self.iec_path = iec_path
+            self._iec_path = iec_path
         if trb_path is not None:
-            self.trb_path = trb_path
+            self._trb_path = trb_path
 
-        self.name = name
+        self._name = name
 
     def make_mesh(self):
         igg.a5_mesh_from_geomturbo(
-            self.trb_path,
-            self.geomturbo_path,
+            self._trb_path,
+            self._geomturbo_path,
             # new_trb,
-            os.path.join(self.working_path, self.name, self.name+'.igg'))
+            os.path.join(self._working_path, self._name, self._name + '.igg'))
 
     def generate_run(self, index: int = 0):
         fine.fine_run_from_mesh(self.iec_path,
-                                os.path.join(self.working_path, self.name, self.name+'.igg'),
-                                os.path.join(self.working_path, self.name, self.name+'.iec'),
+                                os.path.join(self._working_path, self._name, self._name + '.igg'),
+                                os.path.join(self._working_path, self._name, self._name + '.iec'),
                                 index=index)
 
     @staticmethod
@@ -43,9 +43,10 @@ class Simulation(object):
     def run_pipeline(self, cores: int = 20, index: int = 0):
         self.make_mesh()
         self.generate_run(index)
-        all_subdirs = [os.path.join(self.working_path, self.name, d) for d in os.listdir(os.path.join(self.working_path,
-                                                                                                      self.name)) if
-                       os.path.isdir(os.path.join(self.working_path, self.name, d))]
+        all_subdirs = [os.path.join(self._working_path, self._name, d) for d in
+                       os.listdir(os.path.join(self._working_path,
+                                               self._name)) if
+                       os.path.isdir(os.path.join(self._working_path, self._name, d))]
         all_runfiles = []
         for d in all_subdirs:
             for f in os.listdir(d):
@@ -69,14 +70,14 @@ class Simulation(object):
 
     @property
     def name(self):
-        return self.name
+        return self._name
 
     @name.setter
     def name(self, value):
         if self.working_path is not None:
             existing_titles = os.listdir(self.working_path)
             if value not in existing_titles:
-                self.name = value
+                self._name = value
             else:
                 index = 0
                 while True:
@@ -84,18 +85,18 @@ class Simulation(object):
                     new_title = value + f' ({index})'
                     if new_title not in existing_titles:
                         break
-                self.name = new_title
+                self._name = new_title
 
-            os.mkdir(os.path.join(self.working_path, self.name))
+            os.mkdir(os.path.join(self._working_path, self._name))
 
     @property
     def working_path(self):
-        return self.working_path
+        return self._working_path
 
     @working_path.setter
     def working_path(self, value):
         if os.path.exists(value):
-            self.working_path = value
+            self._working_path = value
         else:
             try:
                 os.mkdir(value)
@@ -104,33 +105,33 @@ class Simulation(object):
 
     @property
     def geomturbo_path(self):
-        return self.geomturbo_path
+        return self._geomturbo_path
 
     @geomturbo_path.setter
     def geomturbo_path(self, value):
         if os.path.exists(value):
-            self.geomturbo_path = value
+            self._geomturbo_path = value
         else:
             print(f'"{value}" does not exists')
 
     @property
     def iec_path(self):
-        return self.iec_path
+        return self._iec_path
 
     @iec_path.setter
     def iec_path(self, value):
         if os.path.exists(value):
-            self.iec_path = value
+            self._iec_path = value
         else:
             print(f'"{value}" does not exists')
 
     @property
     def trb_path(self):
-        return self.trb_path
+        return self._trb_path
 
     @trb_path.setter
     def trb_path(self, value):
         if os.path.exists(value):
-            self.trb_path = value
+            self._trb_path = value
         else:
             print(f'"{value}" does not exists')
