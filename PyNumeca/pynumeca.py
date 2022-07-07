@@ -22,6 +22,7 @@ class Simulation(object):
             self.trb_path = trb_path
 
         self.name = name
+        self.runfile = None
 
     def make_mesh(self):
         igg.a5_mesh_from_geomturbo(
@@ -54,15 +55,22 @@ class Simulation(object):
                     all_runfiles.append(os.path.join(d, f))
 
         # print(all_runfiles)
-        latest_runfile = str(max(all_runfiles, key=os.path.getmtime))
-        print('Latest run file:', latest_runfile)
-        self.setup_parallel_computation(latest_runfile, cores)
+        self.runfile = str(max(all_runfiles, key=os.path.getmtime))
+        print('Latest run file:', self.runfile)
+        self.setup_parallel_computation(self.runfile, cores)
 
-        run_file_dir = os.path.split(latest_runfile)[0]
-        run_file_base_name = os.path.splitext(os.path.split(latest_runfile)[1])[0]
+        run_file_dir = os.path.split(self.runfile)[0]
+        run_file_base_name = os.path.splitext(os.path.split(self.runfile)[1])[0]
         batch_file = os.path.join(run_file_dir, run_file_base_name + '.batch')
 
         self.run_parallel_computation(batch_file)
+
+    def read_mf(self):
+        if self.runfile is not None:
+            mf_path = os.path.splitext(self.runfile) + '.mf'
+            if os.path.exists(mf_path):
+                with open(mf_path, 'r') as f:
+                    return f.read()
 
     @staticmethod
     def run_parallel_computation(batch_path: str):
