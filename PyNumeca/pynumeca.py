@@ -87,7 +87,6 @@ class Simulation(object):
                         break
                 self._name = new_title
 
-            print('CREO CARTELLA', os.path.join(self._working_path, self._name))
             os.mkdir(os.path.join(self._working_path, self._name))
 
     @property
