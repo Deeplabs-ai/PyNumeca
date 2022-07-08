@@ -1,4 +1,5 @@
 import os.path
+import signal
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,7 @@ class Simulation(object):
 
         self.name = name
         self.runfile = None
+        self.runpid = None
         self.resfile = None
 
     def make_mesh(self):
@@ -93,9 +95,12 @@ class Simulation(object):
                 with open(mf_path, 'r') as f:
                     return f.read()
 
-    @staticmethod
-    def run_parallel_computation(batch_path: str):
-        fine.run_parallel_computation(batch_path)
+    def run_parallel_computation(self, batch_path: str):
+        self.runpid = fine.run_parallel_computation(batch_path)
+
+    def kill_parallel_computation(self):
+        if self.runpid is not None:
+            os.kill(self.runpid, signal.SIGTERM)
 
     @property
     def name(self):
