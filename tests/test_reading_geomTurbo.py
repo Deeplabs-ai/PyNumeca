@@ -12,7 +12,16 @@ def test_reading_geomturbo():
     test_2.load("data/Rotor37_Autoblade.geomTurbo")
     test_3.load("data/template_rotor_g_v4.geomTurbo")
 
+
     for i, item in enumerate([test, test_2, test_3]):
+        # Test row periodicity reading and writing
+        bladeCount = item.get_row_periodicity(0)
+        print("Before = ", bladeCount)
+        item.set_row_periodicity(int(bladeCount) + 2, 0)
+        bladeCount = item.get_row_periodicity(0)
+        print("After = ", bladeCount)
+
+        # Test export array
         output = item.exportNpyArray()
         logging.info(output.shape)
         item.importNpyArray(output[0])
@@ -23,3 +32,4 @@ def test_reading_geomturbo():
     for file in os.listdir():
         if 'test_file' in file:
             os.remove(file)
+

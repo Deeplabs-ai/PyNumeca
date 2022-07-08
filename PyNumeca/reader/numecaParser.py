@@ -488,14 +488,9 @@ class numecaParser(OrderedDict):
     def retrieveNiBladeGeometry(self, row_number=0, blade_number=0):
         row_occurence = -1
         blade_occurence = -1
-        row_key = ""
         blade_key = ""
 
-        for key in self["ROOT"]["GEOMTURBO"].keys():
-            if "nirow" in key or "NIROW" in key:
-                row_occurence += 1
-                if row_occurence == row_number:
-                    row_key = key
+        row_key = self.retrieve_row_key(row_number)
 
         for key in self["ROOT"]["GEOMTURBO"][row_key].keys():
             if "NIBlade" in key or "NIBLADE" in key:
@@ -516,6 +511,31 @@ class numecaParser(OrderedDict):
             print("ERROR")
 
         return ni_blade_geometry
+
+
+    def set_row_periodicity(self,periodicity,rowNumber=0):
+        row_key = self.retrieve_row_key(rowNumber)
+
+        if (row_key == "" or row_key == None):
+            print("Row not defined")
+        else:
+            self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].value = str(periodicity)
+
+    def get_row_periodicity(self, rowNumber=0):
+        row_key = self.retrieve_row_key(rowNumber)
+        if (row_key == "" or row_key == None):
+            print("Row not defined")
+        else:
+            return(self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].value)
+
+    def retrieve_row_key(self, rowNumber):
+        row_occurence = -1
+        for key in self["ROOT"]["GEOMTURBO"].keys():
+            if "nirow" in key or "NIROW" in key:
+                row_occurence +=1
+                if row_occurence == rowNumber:
+                    return (key)
+        return(None)
 
 
 class CustomError(Exception):
