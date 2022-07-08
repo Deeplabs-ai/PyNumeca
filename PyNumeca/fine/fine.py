@@ -45,5 +45,5 @@ def run_parallel_computation(run_file_path: str):
     cmd = '"' + batch_file + '"'
 
     print("Running command '" + cmd + "'")
-    subprocess.run(cmd)
+    subprocess.run([cmd])
     # os.system(cmd)
