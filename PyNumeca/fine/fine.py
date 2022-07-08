@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 
 from PyNumeca.constants import constants
 
@@ -44,4 +45,5 @@ def run_parallel_computation(run_file_path: str):
     cmd = '"' + batch_file + '"'
 
     print("Running command '" + cmd + "'")
-    os.system(cmd)
+    subprocess.run(cmd)
+    # os.system(cmd)
