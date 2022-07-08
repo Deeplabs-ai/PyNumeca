@@ -1,10 +1,16 @@
 import os.path
 
+import numpy as np
+import pandas as pd
+
 from PyNumeca.fine import fine
 from PyNumeca.igg import igg
 
 
 class Simulation(object):
+    __res_cols = ['Iteration number', 'Work unit', 'CPU time', 'Lift', 'Drag', 'Torque',
+                  'Qmax', 'Tmax', 'Mass flow in', 'Mass flow in']
+
     def __init__(self,
                  name: str = 'Simulation',
                  working_path: str = None,
@@ -23,6 +29,7 @@ class Simulation(object):
 
         self.name = name
         self.runfile = None
+        self.resfile = None
 
     def make_mesh(self):
         igg.a5_mesh_from_geomturbo(
@@ -56,6 +63,7 @@ class Simulation(object):
 
         # print(all_runfiles)
         self.runfile = str(max(all_runfiles, key=os.path.getmtime))
+        self.resfile = os.path.splitext(self.runfile)[0] + '.res'
         print('Latest run file:', self.runfile)
         self.setup_parallel_computation(self.runfile, cores)
 
@@ -64,6 +72,19 @@ class Simulation(object):
         batch_file = os.path.join(run_file_dir, run_file_base_name + '.batch')
 
         self.run_parallel_computation(batch_file)
+
+    def read_resfile(self):
+        with open(self.resfile, 'r') as f:
+            res_content = f.readlines()
+        extract = []
+        index_ = 0
+        for line in res_content:
+            if f' {index_} ' in line:
+                extract.append(
+                    np.array([item for item in line.replace('\n', '').split(' ') if item != ''], dtype=np.float32))
+                index_ += 1
+        dataframe = pd.DataFrame(extract, columns=self.__res_cols)
+        return dataframe
 
     def read_mf(self):
         if self.runfile is not None:
