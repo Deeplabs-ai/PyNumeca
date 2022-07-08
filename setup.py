@@ -2,7 +2,7 @@ from distutils.core import setup
 __version__ = 'v0.0.1'
 
 setup(
-    name='GitMarco',  # How you named your package folder (MyLib)
+    name='PyNumeca',  # How you named your package folder (MyLib)
     packages=['PyNumeca',
               'PyNumeca.fine',
               'PyNumeca.igg',
