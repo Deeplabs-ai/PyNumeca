@@ -18,7 +18,7 @@ class iecEntry(numecaEntry):
         splitPattern = '[\s]{2,}|(?<=\d)[\s]+(?=-?\d)|\b[\s]+$'
         tokenize = string.split()
 
-        if (len(tokenize) > 2 and "NI_BEGIN" not in string):
+        if (len(tokenize) > 2 and "NI_BEGIN" not in string and "VERTEX" not in string):
             tokenize = re.split(splitPattern,string.strip())
             spaces = re.findall(splitPattern, string.strip())
         else:

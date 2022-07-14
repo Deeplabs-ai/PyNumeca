@@ -57,3 +57,8 @@ class zrCurveEntry(iecGroup):
                             self.trailingSpaceStringArray
         outputString += self.footerEntry.outputString()
         return (outputString)
+
+    def append(self,new_ZR):
+        self.numberOfPoints += new_ZR.numberOfPoints -1
+        self.Z.extend(new_ZR.Z[1:])
+        self.R.extend(new_ZR.R[1:])

@@ -219,7 +219,7 @@ class numecaParser(OrderedDict):
             self.stringData[0] = "GEOMETRY-TURBO\n"
         self['ROOT'], temp = self.deepTree(self.stringData, 0)
         self['ROOT'] = self.deep_reorder_zrcurve(self['ROOT'])
-        # self['ROOT'] = self.deepReorderNiBladeGeometry(self['ROOT'])
+        self.merge_ZR()
 
     def deep_reorder_zrcurve(self, group):
         new_group = iecGroup()
@@ -536,6 +536,40 @@ class numecaParser(OrderedDict):
                 if row_occurence == rowNumber:
                     return (key)
         return(None)
+
+    def merge_ZR(self):
+        if "GEOMTURBO" not in self["ROOT"].keys():
+            return
+        basic_curve_dict = self.get_basic_curve_dict()
+        hub_vertex_list = self.get_vertex_list("channel_curve_hub_0")
+        shroud_vertex_list = self.get_vertex_list("channel_curve_shroud_0")
+
+        self.append_and_update_curves(basic_curve_dict,hub_vertex_list)
+        self.append_and_update_curves(basic_curve_dict,shroud_vertex_list)
+
+    def get_vertex_list(self,channel_name):
+        vertex_list = []
+        for key in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][channel_name].keys():
+            if "VERTEX" in key:
+                vertex_list.append((channel_name,key,self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][channel_name][key].value[0]))
+        return vertex_list
+
+    def get_basic_curve_dict(self):
+        basic_curve_dict = {}
+        for key in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"].keys():
+            if "basic_curve" in key:
+                name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["NAME"].value
+                zrList = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["zrcurve_0"]
+                basic_curve_dict[name] = (key, zrList)
+        return (basic_curve_dict)
+
+    def append_and_update_curves(self, basic_curve_dict, vertex_list):
+        base_curve = vertex_list[1][2]
+        for curve in vertex_list[2:]:
+            basic_curve_dict[base_curve][1].append(basic_curve_dict[curve[2]][1])
+            key_to_remove = basic_curve_dict[curve[2]][0]
+            del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key_to_remove]
+            del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][curve[0]][curve[1]]
 
 
 class CustomError(Exception):
