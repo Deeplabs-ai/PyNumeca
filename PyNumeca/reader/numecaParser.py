@@ -588,24 +588,27 @@ class numecaParser(OrderedDict):
         pass
 
     def importZRNpyHubArray(self, hub_section):
-        self.importZRNpyGenericArray(hub_section,"channel_curve_hub_0")
+        self.importZRNpyGenericArrayWithKey(hub_section,"channel_curve_hub_0")
         pass
 
     def importZRNpyShroudArray(self, shroud_section):
-        self.importZRNpyGenericArray(shroud_section,"channel_curve_shroud_0")
+        self.importZRNpyGenericArrayWithKey(shroud_section,"channel_curve_shroud_0")
         pass
 
     def importZRNpyGenericArrayWithKey(self, section, key):
         basic_curve_dict = self.get_basic_curve_dict()
         curve_name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["VERTEX"].value[0]
         curve = basic_curve_dict[curve_name][1]
-        n_points = section.shape[0]
-
-        pass
+        curve.updateArrays(section[:,2],section[:,1])
+        curve.numberOfPoints = section.shape[0]
 
     def importZRNpyArray(self, section):
-        all_zero = np.all(section[:,3]==0)
-        return all_zero
+        if (np.all(section[:,3]==0)):
+            self.importZRNpyHubArray(section)
+        elif (np.all(section[:,3]==1)):
+            self.importZRNpyShroudArray(section)
+        else:
+            print ("ERRORE ARRAY NON COERENTE")
 
 
 
