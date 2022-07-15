@@ -62,3 +62,11 @@ class zrCurveEntry(iecGroup):
         self.numberOfPoints += new_ZR.numberOfPoints -1
         self.Z.extend(new_ZR.Z[1:])
         self.R.extend(new_ZR.R[1:])
+
+    def updateArrays(self,newZ,newR):
+        if (len(newZ) != len(newR)):
+            print("ERRORE")
+            exit()
+        self.numberOfPoints = len(newZ)
+        self.Z = newZ
+        self.R = newR
