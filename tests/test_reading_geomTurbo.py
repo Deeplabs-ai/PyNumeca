@@ -22,10 +22,14 @@ def test_reading_geomturbo():
         bladeCount = item.get_row_periodicity(0)
         print("After = ", bladeCount)
 
-        # Test export array
+        # Test export array for blades
         output = item.exportNpyArray()
         logging.info(output.shape)
         item.importNpyArray(output[0])
+
+        # Test export array for hub and shroud
+        outHub, outShroud = item.exportZRNpyArrays()
+        logging.info(outHub.shape, outShroud.shape)
 
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(item.outputString())

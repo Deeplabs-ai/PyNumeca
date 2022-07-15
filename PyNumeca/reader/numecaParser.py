@@ -571,6 +571,20 @@ class numecaParser(OrderedDict):
             del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key_to_remove]
             del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][curve[0]][curve[1]]
 
+    def exportZRNpyArrays(self):
+        basic_curve_dict = self.get_basic_curve_dict()
+        hub_curve_name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["channel_curve_hub_0"]["VERTEX"].value[0]
+        shroud_curve_name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["channel_curve_shroud_0"]["VERTEX"].value[0]
+        hub_curve = basic_curve_dict[hub_curve_name][1]
+        shroud_curve = basic_curve_dict[shroud_curve_name][1]
+
+        hub_section    = np.vstack([np.zeros(hub_curve.numberOfPoints), hub_curve.R, hub_curve.Z, np.zeros(hub_curve.numberOfPoints)]).transpose()
+        shroud_section = np.vstack([np.zeros(shroud_curve.numberOfPoints), shroud_curve.R, shroud_curve.Z, np.zeros(shroud_curve.numberOfPoints)]).transpose()
+
+        return (hub_section, shroud_section)
+
+    def importZRNpyArrays(self):
+        pass
 
 class CustomError(Exception):
     pass
