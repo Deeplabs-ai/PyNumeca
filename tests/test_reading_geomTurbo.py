@@ -31,8 +31,8 @@ def test_reading_geomturbo():
         logging.info(outHub.shape, outShroud.shape)
 
         # Test import array for hub and shroud
-        item.importZRNpyArray(outHub)
-        item.importZRNpyArray(outShroud)
+        item.importZRNpyArray(outHub[0])
+        item.importZRNpyArray(outShroud[0])
 
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(item.outputString())
