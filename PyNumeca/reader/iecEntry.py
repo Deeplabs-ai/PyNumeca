@@ -51,7 +51,7 @@ class iecEntry(numecaEntry):
         elif (len(tokenize) > 2):
             self.value = []
             self.tagValueSpaceString = []
-            if (tokenize[1].replace('.','',1).replace('-','',2).replace('E','',1).isnumeric()):
+            if (tokenize[1].replace('.','',1).replace('-','',2).replace('E','',1).replace('e','',1).isnumeric()):
                 self.tag = ""
                 self.keyTagSpaceString = ""
                 for idx,token in enumerate(tokenize[1:]):
