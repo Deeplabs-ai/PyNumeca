@@ -21,6 +21,13 @@ def test_reading_geomturbo():
         bladeCount = item.get_row_periodicity(0)
         print("After = ", bladeCount)
 
+        # Test row speed reading and writing
+        bladespeed = item.get_row_speed(0)
+        print("Before = ", bladespeed)
+        item.set_row_speed(float(bladespeed) + 1000, 0)
+        bladespeed = item.get_row_speed(0)
+        print("After = ", bladespeed)
+
         # Test export array for blades
         output = item.exportNpyArray()
         logging.info(output.shape)
@@ -40,3 +47,5 @@ def test_reading_geomturbo():
     for file in os.listdir():
         if 'test_file' in file:
             os.remove(file)
+
+

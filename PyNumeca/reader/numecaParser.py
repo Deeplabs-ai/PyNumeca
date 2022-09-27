@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import numpy as np
+from copy import copy, deepcopy
 
 from PyNumeca.reader.iecEntry import iecEntry
 from PyNumeca.reader.iecGroup import iecGroup
@@ -527,6 +528,40 @@ class numecaParser(OrderedDict):
             print("Row not defined")
         else:
             return(self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].value)
+
+    def set_row_speed(self,row_speed,rowNumber=0):
+        row_key = self.retrieve_row_key(rowNumber)
+
+        if (row_key == "" or row_key == None):
+            print("Row not defined")
+        else:
+            try:
+                self["ROOT"]["GEOMTURBO"][row_key]["ROTATION_SPEED"].value = str(row_speed)
+            except:
+                rot_speed = iecEntry()
+                rot_speed.key = "ROTATION_SPEED"
+                rot_speed.value = str(row_speed)
+                rot_speed.leadingSpaceString = self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].leadingSpaceString
+                rot_speed.keyTagSpaceString = self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].keyTagSpaceString
+                rot_speed.tagValueSpaceString = self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].tagValueSpaceString
+                rot_speed.trailingSpaceString = self["ROOT"]["GEOMTURBO"][row_key]["PERIODICITY"].trailingSpaceString
+                last_item_key = list(self["ROOT"]["GEOMTURBO"][row_key].keys())[-1]
+                last_item_copy = deepcopy(self["ROOT"]["GEOMTURBO"][row_key][last_item_key])
+                del self["ROOT"]["GEOMTURBO"][row_key][last_item_key]
+                self["ROOT"]["GEOMTURBO"][row_key]["ROTATION_SPEED"] = rot_speed
+                self["ROOT"]["GEOMTURBO"][row_key][last_item_key] = last_item_copy
+
+
+    def get_row_speed(self, rowNumber=0):
+        row_key = self.retrieve_row_key(rowNumber)
+        if (row_key == "" or row_key == None):
+            print("Row not defined")
+        else:
+            try:
+                row_speed = self["ROOT"]["GEOMTURBO"][row_key]["ROTATION_SPEED"].value
+                return(row_speed)
+            except:
+                return("NaN")
 
     def retrieve_row_key(self, rowNumber):
         row_occurence = -1
