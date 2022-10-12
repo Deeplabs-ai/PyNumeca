@@ -9,9 +9,11 @@ def test_reading_geomturbo():
     test.append(numecaParser())
     test.append(numecaParser())
     test.append(numecaParser())
+    test.append(numecaParser())
     test[0].load("data/C2_rev4.geomTurbo")
     test[1].load("data/Rotor37_Autoblade.geomTurbo")
     test[2].load("data/template_rotor_g_v4.geomTurbo")
+    test[3].load("data/C2_Mappe_DB_51_r2_final.geomTurbo")
 
     for i, item in enumerate(test):
         # Test row periodicity reading and writing
@@ -47,5 +49,3 @@ def test_reading_geomturbo():
     for file in os.listdir():
         if 'test_file' in file:
             os.remove(file)
-
-

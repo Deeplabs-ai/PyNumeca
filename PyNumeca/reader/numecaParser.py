@@ -593,9 +593,12 @@ class numecaParser(OrderedDict):
         basic_curve_dict = {}
         for key in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"].keys():
             if "basic_curve" in key:
-                name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["NAME"].value
-                zrList = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["zrcurve_0"]
-                basic_curve_dict[name] = (key, zrList)
+                try:
+                    name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["NAME"].value
+                    zrList = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["zrcurve_0"]
+                    basic_curve_dict[name] = (key, zrList)
+                except:
+                    pass
         return (basic_curve_dict)
 
     def append_and_update_curves(self, basic_curve_dict, vertex_list):
