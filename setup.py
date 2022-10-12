@@ -1,5 +1,5 @@
 from distutils.core import setup
-__version__ = 'v0.0.6'
+__version__ = 'v0.0.7'
 
 setup(
     name='PyNumeca',  # How you named your package folder (MyLib)

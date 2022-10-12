@@ -49,6 +49,6 @@ def plan_to_dataframe(
     df = pd.DataFrame(df_raw, columns=cols)
     print(f'DataFrame shape: ', {df.shape})
     if log_head:
-        df.head()
+        print(df.head())
 
     return df
