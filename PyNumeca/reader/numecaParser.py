@@ -474,6 +474,58 @@ class numecaParser(OrderedDict):
             pressure.append(section)
         return np.array([(np.asarray(suction), np.asarray(pressure))], dtype=float)
 
+    def exportNpyArrayCyl(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        if (not self.cylCoordDefined(row_number, blade_number)):
+            self.convertCartesian2Cyl(row_number, blade_number)
+        suction = []
+        pressure = []
+        for item in ni_blade_geometry.suctionList:
+            section = np.vstack([item.R, item.THETA, item.Z, np.zeros(item.numberOfPointsInt)]).transpose()
+            suction.append(section)
+        for item in ni_blade_geometry.pressureList:
+            section = np.vstack([item.R, item.THETA, item.Z, np.ones(item.numberOfPointsInt)]).transpose()
+            section = np.flip(section, axis=0)
+            pressure.append(section)
+        return np.array([(np.asarray(suction), np.asarray(pressure))], dtype=float)
+
+    def convertCartesian2Cyl(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        for item in ni_blade_geometry.suctionList:
+            item.R = []
+            item.THETA = []
+            for index in range(len(item.X)):
+                item.R.append(np.hypot(item.X[index], item.Y[index]))
+                item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
+        for item in ni_blade_geometry.pressureList:
+            item.R = []
+            item.THETA = []
+            for index in range(len(item.X)):
+                item.R.append(np.hypot(item.X[index], item.Y[index]))
+                item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
+
+    def cylCoordDefined(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        check = 0
+        for item in ni_blade_geometry.suctionList:
+            check+= len(item.THETA) + len(item.R)
+        for item in ni_blade_geometry.pressureList:
+            check += len(item.THETA) + len(item.R)
+        return (bool(check))
+
+
+    def importNpyArrayCyl(self, array, row_number=0, blade_number=0):
+        # array shape (2,nSections,nPoints,4)
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        n_sections_from_array = array.shape[1]
+        ni_blade_geometry.setNumberOfSections(n_sections_from_array)
+        for idx, suction in enumerate(ni_blade_geometry.suctionList):
+            new_list = array[0][idx].transpose().tolist()
+            suction.updateArraysCyl(new_list[0], new_list[1], new_list[2])
+        for idx, pressure in enumerate(ni_blade_geometry.pressureList):
+            new_list = array[1][idx].transpose().tolist()
+            pressure.updateArraysCyl(new_list[0][::-1], new_list[1][::-1], new_list[2][::-1])
+
     def importNpyArray(self, array, row_number=0, blade_number=0):
         # array shape (2,nSections,nPoints,4)
         ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
