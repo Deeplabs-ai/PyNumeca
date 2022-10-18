@@ -54,3 +54,5 @@ def test_reading_geomturbo():
     for file in os.listdir():
         if 'test_file' in file:
             os.remove(file)
+
+test_reading_geomturbo()
