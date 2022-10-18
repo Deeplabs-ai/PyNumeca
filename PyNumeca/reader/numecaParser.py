@@ -495,13 +495,13 @@ class numecaParser(OrderedDict):
             item.R = []
             item.THETA = []
             for index in range(len(item.X)):
-                item.R.append(np.hypot(item.X[index], item.Y[index]))
+                item.R.append(np.hypot(item.Y[index], item.X[index]))
                 item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
         for item in ni_blade_geometry.pressureList:
             item.R = []
             item.THETA = []
             for index in range(len(item.X)):
-                item.R.append(np.hypot(item.X[index], item.Y[index]))
+                item.R.append(np.hypot(item.Y[index], item.X[index]))
                 item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
 
     def cylCoordDefined(self, row_number=0, blade_number=0):

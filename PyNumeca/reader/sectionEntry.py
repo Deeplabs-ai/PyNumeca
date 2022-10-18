@@ -55,8 +55,8 @@ class sectionEntry(iecEntry):
         self.THETA = newTHETA
         self.Z = newZ
         for index in range(len(newR)):
-            self.X[index] = self.R[index] * np.sin(self.THETA[index])
-            self.Y[index] = self.R[index] * np.cos(self.THETA[index])
+            self.X[index] = self.R[index] * np.cos(self.THETA[index])
+            self.Y[index] = self.R[index] * np.sin(self.THETA[index])
 
 
 
