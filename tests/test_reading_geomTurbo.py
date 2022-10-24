@@ -30,10 +30,15 @@ def test_reading_geomturbo():
         bladespeed = item.get_row_speed(0)
         print("After = ", bladespeed)
 
-        # Test export array for blades
+        # Test export array for blades with cartesian coordinates
         output = item.exportNpyArray()
         logging.info(output.shape)
         item.importNpyArray(output[0])
+
+        # Test export array for blades with cylindrical coordinates
+        output = item.exportNpyArrayCyl()
+        logging.info(output.shape)
+        item.importNpyArrayCyl(output[0])
 
         # Test export array for hub and shroud
         outHub, outShroud = item.exportZRNpyArrays()

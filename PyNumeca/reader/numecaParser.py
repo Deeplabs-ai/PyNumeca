@@ -474,6 +474,58 @@ class numecaParser(OrderedDict):
             pressure.append(section)
         return np.array([(np.asarray(suction), np.asarray(pressure))], dtype=float)
 
+    def exportNpyArrayCyl(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        if (not self.cylCoordDefined(row_number, blade_number)):
+            self.convertCartesian2Cyl(row_number, blade_number)
+        suction = []
+        pressure = []
+        for item in ni_blade_geometry.suctionList:
+            section = np.vstack([item.R, item.THETA, item.Z, np.zeros(item.numberOfPointsInt)]).transpose()
+            suction.append(section)
+        for item in ni_blade_geometry.pressureList:
+            section = np.vstack([item.R, item.THETA, item.Z, np.ones(item.numberOfPointsInt)]).transpose()
+            section = np.flip(section, axis=0)
+            pressure.append(section)
+        return np.array([(np.asarray(suction), np.asarray(pressure))], dtype=float)
+
+    def convertCartesian2Cyl(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        for item in ni_blade_geometry.suctionList:
+            item.R = []
+            item.THETA = []
+            for index in range(len(item.X)):
+                item.R.append(np.hypot(item.Y[index], item.X[index]))
+                item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
+        for item in ni_blade_geometry.pressureList:
+            item.R = []
+            item.THETA = []
+            for index in range(len(item.X)):
+                item.R.append(np.hypot(item.Y[index], item.X[index]))
+                item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
+
+    def cylCoordDefined(self, row_number=0, blade_number=0):
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        check = 0
+        for item in ni_blade_geometry.suctionList:
+            check+= len(item.THETA) + len(item.R)
+        for item in ni_blade_geometry.pressureList:
+            check += len(item.THETA) + len(item.R)
+        return (bool(check))
+
+
+    def importNpyArrayCyl(self, array, row_number=0, blade_number=0):
+        # array shape (2,nSections,nPoints,4)
+        ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
+        n_sections_from_array = array.shape[1]
+        ni_blade_geometry.setNumberOfSections(n_sections_from_array)
+        for idx, suction in enumerate(ni_blade_geometry.suctionList):
+            new_list = array[0][idx].transpose().tolist()
+            suction.updateArraysCyl(new_list[0], new_list[1], new_list[2])
+        for idx, pressure in enumerate(ni_blade_geometry.pressureList):
+            new_list = array[1][idx].transpose().tolist()
+            pressure.updateArraysCyl(new_list[0][::-1], new_list[1][::-1], new_list[2][::-1])
+
     def importNpyArray(self, array, row_number=0, blade_number=0):
         # array shape (2,nSections,nPoints,4)
         ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
@@ -602,6 +654,13 @@ class numecaParser(OrderedDict):
         return (basic_curve_dict)
 
     def append_and_update_curves(self, basic_curve_dict, vertex_list):
+        for item in basic_curve_dict.items():
+            curve = item[1][1]
+            if curve.numberOfPoints == 2:
+                # QUI bisogna aggiungere i punti
+                #pass
+                curve.uniformIncreasePointsNumber(50)
+
         base_curve = vertex_list[1][2]
         for curve in vertex_list[2:]:
             basic_curve_dict[base_curve][1].append(basic_curve_dict[curve[2]][1])
@@ -615,7 +674,6 @@ class numecaParser(OrderedDict):
         shroud_curve_name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["channel_curve_shroud_0"]["VERTEX"].value[0]
         hub_curve = basic_curve_dict[hub_curve_name][1]
         shroud_curve = basic_curve_dict[shroud_curve_name][1]
-
         hub_section    = np.vstack([np.zeros(hub_curve.numberOfPoints), hub_curve.R, hub_curve.Z, np.zeros(hub_curve.numberOfPoints)]).transpose()
         shroud_section = np.vstack([np.zeros(shroud_curve.numberOfPoints), shroud_curve.R, shroud_curve.Z, np.ones(shroud_curve.numberOfPoints)]).transpose()
         return (np.expand_dims(hub_section,axis=0), np.expand_dims(shroud_section,axis=0))
