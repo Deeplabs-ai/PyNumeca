@@ -10,7 +10,7 @@ from PyNumeca.igg import igg
 
 class Simulation(object):
     __res_cols = ['Iteration number', 'Work unit', 'CPU time', 'Lift', 'Drag', 'Torque',
-                  'Qmax', 'Tmax', 'Mass flow in', 'Mass flow in']
+                  'Qmax', 'Tmax', 'Mass flow in', 'Mass flow out']
 
     def __init__(self,
                  name: str = 'Simulation',
