@@ -1,9 +1,4 @@
-from PyNumeca.reader.numecaParser import numecaParser
-import numpy as np
-import matplotlib.pyplot as plt
-from PyNumeca.preprocessing.bezier3d import get_bezier_parameters, bezier_curve
-import plotly.graph_objects as go
-from PyNumeca.preprocessing.bezier_geomturbo import BezierBlade, BezierCompressor
+from PyNumeca.preprocessing.bezier_geomturbo import BezierCompressor
 
 
 def test_bezier3d_compressor():
