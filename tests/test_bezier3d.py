@@ -10,5 +10,7 @@ def test_bezier3d_compressor():
                               [[100, 20, 20, 100],
                               [100, 20, 20, 100],
                               [20, 100, 20, 20, 100, 20]])
+        bc.load_compressor_from_file()
         bc.fit_compressor_with_bezier()
+        bc.set_control_points('main_blade', bc.main_blade.control_points)
         bc.get_compressor_from_control_points()

@@ -4,6 +4,7 @@ from PyNumeca.preprocessing.bezier3d import get_bezier_parameters, bezier_curve
 import plotly.graph_objects as go
 from PyNumeca.reader.numecaParser import numecaParser
 from typing import List
+import os
 
 
 class BezierBlade(object):
@@ -259,16 +260,40 @@ class BezierCompressor(object):
         if not isinstance(evaluation_points[0], list):
             evaluation_points = [evaluation_points for _ in range(3)]
         
-        inputFile = numecaParser()
-        inputFile.load(geomturbo_path)
-        
-        self.main_blade = BezierBlade(inputFile.exportNpyArray(0, 0)[0], bezier_degree=bezier_degree[0], is_blunt_te=is_blunt_te[0], evaluation_points=evaluation_points[0])
-        self.splitter = BezierBlade(inputFile.exportNpyArray(0, 1)[0], bezier_degree=bezier_degree[1], is_blunt_te=is_blunt_te[1], evaluation_points=evaluation_points[1])
-        self.diffuser = BezierBlade(np.flip(inputFile.exportNpyArray(1, 0)[0], axis=2), bezier_degree=bezier_degree[2], is_blunt_te=is_blunt_te[2], evaluation_points=evaluation_points[2])
+        self.geomturbo_path = geomturbo_path
+        self.bezier_degree = bezier_degree
+        self.evaluation_points = evaluation_points
+        self.is_blunt_te = is_blunt_te
+
+        self.main_blade = BezierBlade(bezier_degree=self.bezier_degree[0], is_blunt_te=self.is_blunt_te[0], evaluation_points=self.evaluation_points[0])
+        self.splitter = BezierBlade(bezier_degree=self.bezier_degree[1], is_blunt_te=self.is_blunt_te[1], evaluation_points=self.evaluation_points[1])
+        self.diffuser = BezierBlade(bezier_degree=self.bezier_degree[2], is_blunt_te=self.is_blunt_te[2], evaluation_points=self.evaluation_points[2])
 
         self.main_blade_control_points = None
         self.splitter_control_points = None
         self.diffuser_control_points = None
+    
+    def load_compressor_from_file(self):
+        if os.path.exists(self.geomturbo_path):
+            inputFile = numecaParser()
+            inputFile.load(self.geomturbo_path)
+            
+            self.main_blade.numpy_blade = inputFile.exportNpyArray(0, 0)[0]
+            self.splitter.numpy_blade = inputFile.exportNpyArray(0, 1)[0]
+            self.diffuser.numpy_blade = np.flip(inputFile.exportNpyArray(1, 0)[0], axis=2)
+
+    def set_control_points(self, tag: str, control_points: np.ndarray):
+        if tag == 'main_blade':
+            self.main_blade.control_points = control_points
+            self.main_blade_control_points = control_points
+        elif tag == 'splitter':
+            self.splitter.control_points = control_points
+            self.splitter_control_points = control_points
+        elif tag == 'diffuser':
+            self.diffuser.control_points = control_points
+            self.diffuser_control_points = control_points
+        else:
+            print(f'Invalid tag: {tag}. Valid tags: "main_blade", "splitter", "diffuser"')
     
     def fit_compressor_with_bezier(self):
         self.main_blade_control_points = self.main_blade.fit_blade_with_bezier()
