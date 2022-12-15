@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from PyNumeca.reader.numecaParser import numecaParser
 from typing import List
 import os
+import joblib
 
 
 class BezierBlade(object):
@@ -369,7 +370,8 @@ class BezierBlade(object):
 
 class BezierCompressor(object):
     def __init__(self, geomturbo_path: str, bezier_degree: list | List(list, list, list), is_blunt_te: list, evaluation_points: list | List(list, list, list),
-                 split_edges: list):
+                 split_edges: list, is_main_blade_active: bool = True, is_splitter_active: bool = True, is_diffuser_active: bool = True):
+        
         if not isinstance(bezier_degree[0], list):
             bezier_degree = [bezier_degree for _ in range(3)]
         if not isinstance(evaluation_points[0], list):
@@ -379,10 +381,18 @@ class BezierCompressor(object):
         self.bezier_degree = bezier_degree
         self.evaluation_points = evaluation_points
         self.is_blunt_te = is_blunt_te
+        self.is_main_blade_active = is_main_blade_active
+        self.is_splitter_active = is_splitter_active
+        self.is_diffuser_active = is_diffuser_active
 
-        self.main_blade = BezierBlade(bezier_degree=self.bezier_degree[0], is_blunt_te=self.is_blunt_te[0], evaluation_points=self.evaluation_points[0], split_edges=split_edges[0])
-        self.splitter = BezierBlade(bezier_degree=self.bezier_degree[1], is_blunt_te=self.is_blunt_te[1], evaluation_points=self.evaluation_points[1], split_edges=split_edges[1])
-        self.diffuser = BezierBlade(bezier_degree=self.bezier_degree[2], is_blunt_te=self.is_blunt_te[2], evaluation_points=self.evaluation_points[2], split_edges=split_edges[2])
+        self.main_blade = self.splitter = self.diffuser = None
+
+        if is_main_blade_active:
+            self.main_blade = BezierBlade(bezier_degree=self.bezier_degree[0], is_blunt_te=self.is_blunt_te[0], evaluation_points=self.evaluation_points[0], split_edges=split_edges[0])
+        if is_splitter_active:
+            self.splitter = BezierBlade(bezier_degree=self.bezier_degree[1], is_blunt_te=self.is_blunt_te[1], evaluation_points=self.evaluation_points[1], split_edges=split_edges[1])
+        if is_diffuser_active:
+            self.diffuser = BezierBlade(bezier_degree=self.bezier_degree[2], is_blunt_te=self.is_blunt_te[2], evaluation_points=self.evaluation_points[2], split_edges=split_edges[2])
 
         self.main_blade_control_points = None
         self.splitter_control_points = None
@@ -391,45 +401,76 @@ class BezierCompressor(object):
     def set_le_points_number(self, points_number: int | List(int, int, int)) -> None:
         if isinstance(points_number, int):
             points_number = [points_number for _ in range(3)]
-        self.main_blade.set_le_points_number(points_number[0])
-        self.splitter.set_le_points_number(points_number[1])
-        self.diffuser.set_le_points_number(points_number[2])
+        self.main_blade.set_le_points_number(points_number[0]) if self.is_main_blade_active else None
+        self.splitter.set_le_points_number(points_number[1]) if self.is_splitter_active else None
+        self.diffuser.set_le_points_number(points_number[2]) if self.is_diffuser_active else None
     
     def set_te_points_number(self, points_number: int | List(int, int, int)) -> None:
         if isinstance(points_number, int):
             points_number = [points_number for _ in range(3)]
-        self.main_blade.set_te_points_number(points_number[0])
-        self.splitter.set_te_points_number(points_number[1])
-        self.diffuser.set_te_points_number(points_number[2])
+        self.main_blade.set_te_points_number(points_number[0]) if self.is_main_blade_active else None
+        self.splitter.set_te_points_number(points_number[1]) if self.is_splitter_active else None
+        self.diffuser.set_te_points_number(points_number[2]) if self.is_diffuser_active else None
     
     def load_compressor_from_file(self):
         if os.path.exists(self.geomturbo_path):
             inputFile = numecaParser()
             inputFile.load(self.geomturbo_path)
             
-            self.main_blade.numpy_blade = inputFile.exportNpyArray(0, 0)[0]
-            self.splitter.numpy_blade = inputFile.exportNpyArray(0, 1)[0]
-            self.diffuser.numpy_blade = np.flip(inputFile.exportNpyArray(1, 0)[0], axis=2)
+            if self.is_main_blade_active:
+                self.main_blade.numpy_blade = inputFile.exportNpyArray(0, 0)[0]
+            if self.is_splitter_active:
+                self.splitter.numpy_blade = inputFile.exportNpyArray(0, 1)[0]
+            if self.is_diffuser_active:
+                # @TODO: why do we we need to flip diffuser blade? Is this a NumecaParser bug? 
+                self.diffuser.numpy_blade = np.flip(inputFile.exportNpyArray(1, 0)[0], axis=2)
+        else:
+            raise FileNotFoundError(f'{self.geomturbo_path} does not exist')
 
     def set_control_points(self, tag: str, control_points: np.ndarray):
         if tag == 'main_blade':
-            self.main_blade.control_points = control_points
-            self.main_blade_control_points = control_points
+            if self.is_main_blade_active:
+                self.main_blade.control_points = control_points
+                self.main_blade_control_points = control_points
+            else:
+                raise AttributeError('Main blade is not active')
         elif tag == 'splitter':
-            self.splitter.control_points = control_points
-            self.splitter_control_points = control_points
+            if self.is_splitter_active:
+                self.splitter.control_points = control_points
+                self.splitter_control_points = control_points
+            else:
+                raise AttributeError('Splitter is not active')
         elif tag == 'diffuser':
-            self.diffuser.control_points = control_points
-            self.diffuser_control_points = control_points
+            if self.is_diffuser_active:
+                self.diffuser.control_points = control_points
+                self.diffuser_control_points = control_points
+            else:
+                raise AttributeError('Diffuser is not active')
         else:
             print(f'Invalid tag: {tag}. Valid tags: "main_blade", "splitter", "diffuser"')
     
     def fit_compressor_with_bezier(self):
-        self.main_blade_control_points = self.main_blade.fit_blade_with_bezier()
-        self.splitter_control_points = self.splitter.fit_blade_with_bezier()
-        self.diffuser_control_points = self.diffuser.fit_blade_with_bezier()
+        self.main_blade_control_points = self.main_blade.fit_blade_with_bezier() if self.is_main_blade_active else None
+        self.splitter_control_points = self.splitter.fit_blade_with_bezier() if self.is_splitter_active else None
+        self.diffuser_control_points = self.diffuser.fit_blade_with_bezier() if self.is_diffuser_active else None
     
     def get_compressor_from_control_points(self):
-        self.main_blade.get_blade_from_control_points()
-        self.splitter.get_blade_from_control_points()
-        self.diffuser.get_blade_from_control_points()
+        self.main_blade.get_blade_from_control_points() if self.is_main_blade_active else None
+        self.splitter.get_blade_from_control_points() if self.is_splitter_active else None
+        self.diffuser.get_blade_from_control_points() if self.is_diffuser_active else None
+    
+    def save(self, path: str):
+        _, file_extension = os.path.splitext(path)
+        if file_extension != '.bin':
+            path += '.bin'
+        
+        with open(path, 'wb') as f:
+            joblib.dump(self, f)
+        
+        print(f'{self.__class__.__name__} saved to {path}')
+    
+    @staticmethod
+    def load(path: str):
+        if not os.path.exists(path):
+            raise ValueError(f'{path} does not exist')
+        return joblib.load(path)
