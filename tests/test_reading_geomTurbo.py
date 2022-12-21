@@ -48,9 +48,14 @@ def test_reading_geomturbo():
         item.importZRNpyArray(outHub[0])
         item.importZRNpyArray(outShroud[0])
 
+        # Test export array for hub and shroud as list of segments
+        outHubList, outShroudList = item.exportZRNpyArraysList()
+        logging.info(len(outHubList), len(outShroudList))
+
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(item.outputString())
 
     for file in os.listdir():
         if 'test_file' in file:
             os.remove(file)
+            pass

@@ -220,7 +220,7 @@ class numecaParser(OrderedDict):
             self.stringData[0] = "GEOMETRY-TURBO\n"
         self['ROOT'], temp = self.deepTree(self.stringData, 0)
         self['ROOT'] = self.deep_reorder_zrcurve(self['ROOT'])
-        self.merge_ZR()
+        #self.merge_ZR()
 
     def deep_reorder_zrcurve(self, group):
         new_group = iecGroup()
@@ -667,6 +667,26 @@ class numecaParser(OrderedDict):
             key_to_remove = basic_curve_dict[curve[2]][0]
             del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key_to_remove]
             del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][curve[0]][curve[1]]
+
+    def extractChannelCurves(self, channel_curve_name):
+        basic_curve_dict = self.get_basic_curve_dict()
+        # channel_curve_name possible values = channel_curve_hub_0
+        #                                      channel_curve_shroud_0
+        curve_array_list = []
+        for key, item in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][channel_curve_name].items():
+            if "VERTEX" in key:
+                curve_name = item.value[0]
+                curve = basic_curve_dict[curve_name][1]
+                curve_array = np.vstack([np.zeros(curve.numberOfPoints), curve.R, curve.Z, np.zeros(curve.numberOfPoints)]).transpose()
+                curve_array = np.expand_dims(curve_array,axis=0)
+                curve_array_list.append(curve_array)
+        return (curve_array_list)
+
+    def exportZRNpyArraysList(self):
+        hub_array_list = self.extractChannelCurves("channel_curve_hub_0")
+        shroud_array_list = self.extractChannelCurves("channel_curve_shroud_0")
+        return (hub_array_list, shroud_array_list)
+
 
     def exportZRNpyArrays(self):
         basic_curve_dict = self.get_basic_curve_dict()
