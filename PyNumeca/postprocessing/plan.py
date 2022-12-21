@@ -30,6 +30,8 @@ def plan_to_dataframe(
     # fixing .plan variable spacing
     for i in range(1, 10):
         content = content.replace(i * ' ', ' ')
+    
+    content = content.replace('\t', ' ')
 
     # Reading dataframe columns
     edp = find_between(content, '# Design parameters', '# Responses').replace('\n', '').split()
