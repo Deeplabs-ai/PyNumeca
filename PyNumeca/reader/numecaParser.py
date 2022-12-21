@@ -673,13 +673,17 @@ class numecaParser(OrderedDict):
         # channel_curve_name possible values = channel_curve_hub_0
         #                                      channel_curve_shroud_0
         curve_array_list = []
+        avoid_first_occurrence = True
         for key, item in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][channel_curve_name].items():
             if "VERTEX" in key:
-                curve_name = item.value[0]
-                curve = basic_curve_dict[curve_name][1]
-                curve_array = np.vstack([np.zeros(curve.numberOfPoints), curve.R, curve.Z, np.zeros(curve.numberOfPoints)]).transpose()
-                curve_array = np.expand_dims(curve_array,axis=0)
-                curve_array_list.append(curve_array)
+                if not avoid_first_occurrence:
+                    curve_name = item.value[0]
+                    curve = basic_curve_dict[curve_name][1]
+                    curve_array = np.vstack([np.zeros(curve.numberOfPoints), curve.R, curve.Z, np.zeros(curve.numberOfPoints)]).transpose()
+                    curve_array = np.expand_dims(curve_array,axis=0)
+                    curve_array_list.append(curve_array)
+                else:
+                    avoid_first_occurrence = False
         return (curve_array_list)
 
     def exportZRNpyArraysList(self):
@@ -697,6 +701,11 @@ class numecaParser(OrderedDict):
         hub_section    = np.vstack([np.zeros(hub_curve.numberOfPoints), hub_curve.R, hub_curve.Z, np.zeros(hub_curve.numberOfPoints)]).transpose()
         shroud_section = np.vstack([np.zeros(shroud_curve.numberOfPoints), shroud_curve.R, shroud_curve.Z, np.ones(shroud_curve.numberOfPoints)]).transpose()
         return (np.expand_dims(hub_section,axis=0), np.expand_dims(shroud_section,axis=0))
+
+    def exportZRNpyArrays2(self):
+        hub_array_list, shroud_array_list = self.exportZRNpyArraysList()
+
+
 
     def importZRNpyArrays(self, hub_section, shroud_section):
         self.importZRNpyHubArray(hub_section)
