@@ -691,20 +691,8 @@ class numecaParser(OrderedDict):
         shroud_array_list = self.extractChannelCurves("channel_curve_shroud_0")
         return (hub_array_list, shroud_array_list)
 
-
-    def exportZRNpyArrays(self):
-        basic_curve_dict = self.get_basic_curve_dict()
-        hub_curve_name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["channel_curve_hub_0"]["VERTEX"].value[0]
-        shroud_curve_name = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]["channel_curve_shroud_0"]["VERTEX"].value[0]
-        hub_curve = basic_curve_dict[hub_curve_name][1]
-        shroud_curve = basic_curve_dict[shroud_curve_name][1]
-        hub_section    = np.vstack([np.zeros(hub_curve.numberOfPoints), hub_curve.R, hub_curve.Z, np.zeros(hub_curve.numberOfPoints)]).transpose()
-        shroud_section = np.vstack([np.zeros(shroud_curve.numberOfPoints), shroud_curve.R, shroud_curve.Z, np.ones(shroud_curve.numberOfPoints)]).transpose()
-        return (np.expand_dims(hub_section,axis=0), np.expand_dims(shroud_section,axis=0))
-
     def vStackArray(self, arrayList):
         vStackArray = arrayList[0]
-
         for array in arrayList[1:]:
             if array.shape[1] == 2:
                 array = self.fillZRArray(array, 50)
@@ -719,10 +707,9 @@ class numecaParser(OrderedDict):
         newArray = np.vstack([np.zeros(nPoints), R, Z,np.zeros(nPoints)]).transpose()
         return np.expand_dims(newArray,axis=0)
 
-    def exportZRNpyArrays2(self):
+    def exportZRNpyArrays(self):
         hub_array_list, shroud_array_list = self.exportZRNpyArraysList()
         return (self.vStackArray(hub_array_list), self.vStackArray(shroud_array_list))
-
 
     def importZRNpyArrays(self, hub_section, shroud_section):
         self.importZRNpyHubArray(hub_section)
