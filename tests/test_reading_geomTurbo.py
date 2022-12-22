@@ -26,6 +26,7 @@ def test_reading_geomturbo():
         # Test row speed reading and writing
         bladespeed = item.get_row_speed(0)
         print("Before = ", bladespeed)
+        if (bladespeed == "NaN"): bladespeed = 1234
         item.set_row_speed(float(bladespeed) + 1000, 0)
         bladespeed = item.get_row_speed(0)
         print("After = ", bladespeed)
@@ -51,6 +52,10 @@ def test_reading_geomturbo():
         # Test export array for hub and shroud as list of segments
         outHubList, outShroudList = item.exportZRNpyArraysList()
         logging.info(len(outHubList), len(outShroudList))
+
+        # Test export array for hub and shroud as a single line
+        outHub2, outShroud2 = item.exportZRNpyArrays2()
+        logging.info(outHub2.shape, outShroud2.shape)
 
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(item.outputString())

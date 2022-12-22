@@ -702,9 +702,26 @@ class numecaParser(OrderedDict):
         shroud_section = np.vstack([np.zeros(shroud_curve.numberOfPoints), shroud_curve.R, shroud_curve.Z, np.ones(shroud_curve.numberOfPoints)]).transpose()
         return (np.expand_dims(hub_section,axis=0), np.expand_dims(shroud_section,axis=0))
 
+    def vStackArray(self, arrayList):
+        vStackArray = arrayList[0]
+
+        for array in arrayList[1:]:
+            if array.shape[1] == 2:
+                array = self.fillZRArray(array, 50)
+            vStackArray = np.append(vStackArray, array[:,1:,:], axis=1)
+        return vStackArray
+
+    def fillZRArray(self, array, nPoints):
+        ref = np.array([0,1])
+        X = np.linspace(0,1,num=nPoints)
+        R = np.interp(X, ref, array[0,:,1])
+        Z = np.interp(X, ref, array[0,:,2])
+        newArray = np.vstack([np.zeros(nPoints), R, Z,np.zeros(nPoints)]).transpose()
+        return np.expand_dims(newArray,axis=0)
+
     def exportZRNpyArrays2(self):
         hub_array_list, shroud_array_list = self.exportZRNpyArraysList()
-
+        return (self.vStackArray(hub_array_list), self.vStackArray(shroud_array_list))
 
 
     def importZRNpyArrays(self, hub_section, shroud_section):
