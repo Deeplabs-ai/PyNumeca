@@ -76,7 +76,7 @@ class zrCurveEntry(iecGroup):
         Z1 = self.Z.pop()
         R2 = self.R.pop()
         R1 = self.R.pop()
-        for i in range(int(n_points)):
+        for i in range(int(n_points+1)):
             self.R.append((R2 - R1) / int(n_points) * i + R1)
             self.Z.append((Z2 - Z1) / int(n_points) * i + Z1)
         self.numberOfPoints = int(n_points)

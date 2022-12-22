@@ -60,3 +60,5 @@ def test_reading_geomturbo():
         if 'test_file' in file:
             os.remove(file)
             pass
+
+test_reading_geomturbo()
