@@ -1,2 +1,5 @@
 numpy
 plotly
+pandas
+scipy
+joblib
