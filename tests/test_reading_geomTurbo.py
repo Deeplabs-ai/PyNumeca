@@ -61,4 +61,3 @@ def test_reading_geomturbo():
             os.remove(file)
             pass
 
-test_reading_geomturbo()
