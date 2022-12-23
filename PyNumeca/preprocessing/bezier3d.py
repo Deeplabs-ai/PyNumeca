@@ -82,9 +82,10 @@ def bezier_curve(points, nTimes=50):
     t = np.linspace(0.0, 1.0, nTimes)
 
     polynomial_array = np.array([ bernstein_poly(i, nPoints-1, t) for i in range(0, nPoints)   ])
-
-    xvals = np.dot(xPoints, polynomial_array)
-    yvals = np.dot(yPoints, polynomial_array)
-    zvals = np.dot(zPoints, polynomial_array)
+    
+    # TODO: why a is necessary to flip there?
+    xvals = np.flip(np.dot(xPoints, polynomial_array))
+    yvals = np.flip(np.dot(yPoints, polynomial_array))
+    zvals = np.flip(np.dot(zPoints, polynomial_array))
 
     return xvals, yvals, zvals
