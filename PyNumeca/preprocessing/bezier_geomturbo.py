@@ -8,6 +8,117 @@ import os
 import joblib
 
 
+class BezierChannel(object):
+    def __init__(self, hub: list = None, shroud: list = None,
+                 control_points_hub: np.ndarray = None,
+                 control_points_shroud: np.ndarray = None,
+                 degree: int = 6,
+                 evaluation_points: int = 30):
+        
+        self.hub = hub
+        self.shroud = shroud
+        self.control_points_hub = control_points_hub
+        self.control_points_shroud = control_points_shroud
+        self.degree = degree
+        self.evaluation_points = evaluation_points
+
+        self.fitted_hub = None
+        self.fitted_shroud = None
+
+        self.hub_degress = None
+        self.shroud_degress = None
+    
+    def __fit_with_bezier(self, segments_list: list):
+        controls = []
+        degrees = []
+
+        for i, segment in enumerate(segments_list):
+            if i != len(segments_list) - 1:
+                assert (np.round(segment[0, -1, :], 8) == np.round(segments_list[i + 1][0, 0, :], 8)).all(), f'Error in {self.__class__.__name__} bezier fitting'
+
+            deg = 1 if len(segment[0]) == 2 else self.degree
+            points = get_bezier_parameters(segment[0, :, 0], segment[0, :, 1], segment[0, :, 2], degree=deg)
+            
+            if i != len(segments_list) - 1:
+                del points[-1]
+
+            controls.append(points)
+            degrees.append(deg)
+        
+        return np.vstack(controls), degrees
+    
+    def fit_channel_with_bezier(self):
+        if self.hub is not None:
+            self.control_points_hub, self.hub_degress = self.__fit_with_bezier(self.hub)
+        else:
+            print(f'{self.__class__.__name__}.hub is None')
+        
+        if self.shroud is not None:
+            self.control_points_shroud, self.shroud_degress = self.__fit_with_bezier(self.shroud)
+        else:
+            print(f'{self.__class__.__name__}.shroud is None')
+    
+    def __get_from_control_points(self, control_points: np.ndarray, degrees: list):
+        controls = []
+        lower_bound: int = 0
+        curve = []
+
+        n_segments = len(degrees)
+
+        for i in range(n_segments):
+            if i != (n_segments - 1):
+                upper_bound:int = lower_bound + 1 if degrees[i] == 1 else lower_bound + degrees[i]
+                
+                controls.append(control_points[lower_bound:upper_bound])
+            else:
+                controls.append(control_points[lower_bound:])
+
+            lower_bound = upper_bound
+        
+        for i in range(n_segments):
+            if i != (n_segments - 1):
+                # controls[i] = np.insert(controls[i], -1, controls[i+1][0], 0)
+                controls[i] = np.concatenate([controls[i], controls[i+1][:1]], axis=0)
+                pass
+            points = np.array(bezier_curve(controls[i], self.evaluation_points)).T
+            curve.append(points)
+        
+        curve = np.concatenate(curve, axis=0)
+
+        return curve
+    
+    def get_channel_from_control_points(self):
+        self.fitted_hub = self.__get_from_control_points(self.control_points_hub, self.hub_degress)
+        self.fitted_shroud = self.__get_from_control_points(self.control_points_shroud, self.shroud_degress)
+    
+    def draw_channel(self, show: bool = False, width: int = 1000, height: int = 800):
+        fig = go.Figure(data=[
+                      go.Scatter3d(x=self.control_points_hub[:, 0], y=self.control_points_hub[:, 1], z=self.control_points_hub[:, 2],
+                                   mode='markers',
+                                   marker=dict(size=5),
+                                   name='Control Points Hub'),
+                      go.Scatter3d(x=self.fitted_hub[:, 0], y=self.fitted_hub[:, 1], z=self.fitted_hub[:, 2],
+                                   mode='markers',
+                                   marker=dict(size=5),
+                                   name='Fitted curve Hub'),
+                      go.Scatter3d(x=self.control_points_shroud[:, 0], y=self.control_points_shroud[:, 1], z=self.control_points_shroud[:, 2],
+                                   mode='markers',
+                                   marker=dict(size=5),
+                                   name='Control Points Shroud'),
+                      go.Scatter3d(x=self.fitted_shroud[:, 0], y=self.fitted_shroud[:, 1], z=self.fitted_shroud[:, 2],
+                                   mode='markers',
+                                   marker=dict(size=5),
+                                   name='Fitted curve Shroud'),
+        ],
+                                   layout=go.Layout(
+                            width=width,
+                            height=height,
+                        ))
+        fig.show() if show else None
+        return fig
+
+
+
 class BezierBlade(object):
     __LE_POINTS_NUMBER = 15
     __TE_POINTS_NUMBER = 15
@@ -330,7 +441,7 @@ class BezierBlade(object):
         else:
             print(f'{self.__class__.__name__}.control points are None')
     
-    def draw_blade(self, show: bool = False):
+    def draw_blade(self, show: bool = False, width: int = 1000, height: int = 800):
         data = []
         if self.numpy_blade is not None:
             bld = self.numpy_blade[:, :, :, :3].reshape(-1, 3)
@@ -361,8 +472,8 @@ class BezierBlade(object):
 
         fig = go.Figure(data=data,
                         layout=go.Layout(
-                        width=1000,
-                        height=800,
+                        width=width,
+                        height=height,
                                 ))
         fig.show() if show else None
         return fig
@@ -370,7 +481,8 @@ class BezierBlade(object):
 
 class BezierCompressor(object):
     def __init__(self, geomturbo_path: str, bezier_degree: list | List(list, list, list), is_blunt_te: list, evaluation_points: list | List(list, list, list),
-                 split_edges: list, is_main_blade_active: bool = True, is_splitter_active: bool = True, is_diffuser_active: bool = True):
+                 split_edges: list, is_main_blade_active: bool = True, is_splitter_active: bool = True, is_diffuser_active: bool = True, is_channel_active: bool = True,
+                 channel_degree: int = 6, channel_evaluation_points: int = 30):
         
         if not isinstance(bezier_degree[0], list):
             bezier_degree = [bezier_degree for _ in range(3)]
@@ -384,6 +496,8 @@ class BezierCompressor(object):
         self.is_main_blade_active = is_main_blade_active
         self.is_splitter_active = is_splitter_active
         self.is_diffuser_active = is_diffuser_active
+        self.is_channel_active = is_channel_active
+        self.channel_evaluation_points = channel_evaluation_points
 
         self.main_blade = self.splitter = self.diffuser = None
 
@@ -393,6 +507,8 @@ class BezierCompressor(object):
             self.splitter = BezierBlade(bezier_degree=self.bezier_degree[1], is_blunt_te=self.is_blunt_te[1], evaluation_points=self.evaluation_points[1], split_edges=split_edges[1])
         if is_diffuser_active:
             self.diffuser = BezierBlade(bezier_degree=self.bezier_degree[2], is_blunt_te=self.is_blunt_te[2], evaluation_points=self.evaluation_points[2], split_edges=split_edges[2])
+        if is_channel_active:
+            self.channel = BezierChannel(degree=channel_degree, evaluation_points=channel_evaluation_points)
 
         self.main_blade_control_points = None
         self.splitter_control_points = None
@@ -422,8 +538,10 @@ class BezierCompressor(object):
             if self.is_splitter_active:
                 self.splitter.numpy_blade = inputFile.exportNpyArray(0, 1)[0]
             if self.is_diffuser_active:
-                # @TODO: why do we we need to flip diffuser blade? Is this a NumecaParser bug? 
-                self.diffuser.numpy_blade = np.flip(inputFile.exportNpyArray(1, 0)[0], axis=2)
+                self.diffuser.numpy_blade = inputFile.exportNpyArray(1, 0)[0]
+            if self.is_channel_active:
+                self.channel.hub, self.channel.shroud = inputFile.exportZRNpyArraysList()
+
         else:
             raise FileNotFoundError(f'{self.geomturbo_path} does not exist')
 
@@ -446,18 +564,31 @@ class BezierCompressor(object):
                 self.diffuser_control_points = control_points
             else:
                 raise AttributeError('Diffuser is not active')
+        elif tag == 'hub':
+            if self.is_channel_active:
+                self.channel.control_points_hub = control_points
+            else:
+                raise AttributeError('Channel is not active')
+        elif tag == 'shroud':
+            if self.is_channel_active:
+                self.channel.control_points_shroud = control_points
+            else:
+                raise AttributeError('Channel is not active')
+
         else:
-            print(f'Invalid tag: {tag}. Valid tags: "main_blade", "splitter", "diffuser"')
+            print(f'Invalid tag: {tag}. Valid tags: "main_blade", "splitter", "diffuser", "hub", "shroud"')
     
     def fit_compressor_with_bezier(self):
         self.main_blade_control_points = self.main_blade.fit_blade_with_bezier() if self.is_main_blade_active else None
         self.splitter_control_points = self.splitter.fit_blade_with_bezier() if self.is_splitter_active else None
         self.diffuser_control_points = self.diffuser.fit_blade_with_bezier() if self.is_diffuser_active else None
+        self.channel.fit_channel_with_bezier() if self.is_channel_active else None
     
     def get_compressor_from_control_points(self):
         self.main_blade.get_blade_from_control_points() if self.is_main_blade_active else None
         self.splitter.get_blade_from_control_points() if self.is_splitter_active else None
         self.diffuser.get_blade_from_control_points() if self.is_diffuser_active else None
+        self.channel.get_channel_from_control_points() if self.is_channel_active else None
     
     def save(self, path: str):
         _, file_extension = os.path.splitext(path)
