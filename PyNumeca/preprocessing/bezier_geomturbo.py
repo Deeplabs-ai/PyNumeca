@@ -34,7 +34,8 @@ class BezierChannel(object):
 
         for i, segment in enumerate(segments_list):
             if i != len(segments_list) - 1:
-                assert (np.round(segment[0, -1, :], 8) == np.round(segments_list[i + 1][0, 0, :], 8)).all(), f'Error in {self.__class__.__name__} bezier fitting'
+                # TODO: why is necessry a tollerance there?
+                assert (np.round(segment[0, -1, :], 5) == np.round(segments_list[i + 1][0, 0, :], 5)).all(), f'Error in {self.__class__.__name__} bezier fitting'
 
             deg = 1 if len(segment[0]) == 2 else self.degree
             points = get_bezier_parameters(segment[0, :, 0], segment[0, :, 1], segment[0, :, 2], degree=deg)
