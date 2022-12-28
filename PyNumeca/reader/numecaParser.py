@@ -672,6 +672,13 @@ class numecaParser(OrderedDict):
         basic_curve_dict = self.get_basic_curve_dict()
         # channel_curve_name possible values = channel_curve_hub_0
         #                                      channel_curve_shroud_0
+        if ("shroud" in channel_curve_name):
+            zeros_or_ones = np.ones
+        elif ("hub" in channel_curve_name):
+            zeros_or_ones = np.zeros
+        else:
+            raise Exception("ERROR ZERO ONE HUB SHROUD")
+
         curve_array_list = []
         avoid_first_occurrence = True
         for key, item in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][channel_curve_name].items():
@@ -679,7 +686,7 @@ class numecaParser(OrderedDict):
                 if not avoid_first_occurrence:
                     curve_name = item.value[0]
                     curve = basic_curve_dict[curve_name][1]
-                    curve_array = np.vstack([np.zeros(curve.numberOfPoints), curve.R, curve.Z, np.zeros(curve.numberOfPoints)]).transpose()
+                    curve_array = np.vstack([zeros_or_ones(curve.numberOfPoints), curve.R, curve.Z, zeros_or_ones(curve.numberOfPoints)]).transpose()
                     curve_array = np.expand_dims(curve_array,axis=0)
                     curve_array_list.append(curve_array)
                 else:
@@ -700,11 +707,17 @@ class numecaParser(OrderedDict):
         return vStackArray
 
     def fillZRArray(self, array, nPoints):
+        if (array[0,0,3]==0):
+            zeros_or_ones = np.zeros
+        elif (array[0,0,3]==1):
+            zeros_or_ones = np.ones
+        else:
+            raise Exception("ERROR ZERO ONE HUB SHROUD")
         ref = np.array([0,1])
         X = np.linspace(0,1,num=nPoints)
         R = np.interp(X, ref, array[0,:,1])
         Z = np.interp(X, ref, array[0,:,2])
-        newArray = np.vstack([np.zeros(nPoints), R, Z,np.zeros(nPoints)]).transpose()
+        newArray = np.vstack([zeros_or_ones(nPoints), R, Z,zeros_or_ones(nPoints)]).transpose()
         return np.expand_dims(newArray,axis=0)
 
     def exportZRNpyArrays(self):
