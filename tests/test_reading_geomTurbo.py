@@ -46,12 +46,16 @@ def test_reading_geomturbo():
         logging.info(outHub.shape, outShroud.shape)
 
         # Test import array for hub and shroud
-        item.importZRNpyArray(outHub[0])
-        item.importZRNpyArray(outShroud[0])
+        #item.importZRNpyArray(outHub[0])
+        #item.importZRNpyArray(outShroud[0])
 
         # Test export array for hub and shroud as list of segments
         outHubList, outShroudList = item.exportZRNpyArraysList()
         logging.info(len(outHubList), len(outShroudList))
+
+        # Test import of list of arrays for hub and shroud
+        item.importZRNpyArray2(outHubList)
+        item.importZRNpyArray2(outShroudList)
 
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(item.outputString())
@@ -60,4 +64,3 @@ def test_reading_geomturbo():
         if 'test_file' in file:
             os.remove(file)
             pass
-

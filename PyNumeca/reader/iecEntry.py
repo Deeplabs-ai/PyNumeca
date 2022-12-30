@@ -1,8 +1,8 @@
 import re
 from PyNumeca.reader.numecaEntry import numecaEntry
 class iecEntry(numecaEntry):
-    def __init__(self):
-        super(iecEntry, self).__init__()
+    def __init__(self,*args):
+        super(iecEntry, self).__init__(*args)
 
     def parseSimpleEntry(self,string):
         if string == "\n":
@@ -107,4 +107,3 @@ class iecEntry(numecaEntry):
         return (self.key + "\n" +
                 self.tag + "\n" +
                 valueString)
-
