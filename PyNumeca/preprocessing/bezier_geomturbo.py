@@ -25,8 +25,8 @@ class BezierChannel(object):
         self.fitted_hub = None
         self.fitted_shroud = None
 
-        self.hub_degress = None
-        self.shroud_degress = None
+        self.hub_degrees = None
+        self.shroud_degrees = None
     
     def __fit_with_bezier(self, segments_list: list):
         controls = []
@@ -52,12 +52,12 @@ class BezierChannel(object):
     
     def fit_channel_with_bezier(self):
         if self.hub is not None:
-            self.control_points_hub, self.hub_degress = self.__fit_with_bezier(self.hub)
+            self.control_points_hub, self.hub_degrees = self.__fit_with_bezier(self.hub)
         else:
             print(f'{self.__class__.__name__}.hub is None')
         
         if self.shroud is not None:
-            self.control_points_shroud, self.shroud_degress = self.__fit_with_bezier(self.shroud)
+            self.control_points_shroud, self.shroud_degrees = self.__fit_with_bezier(self.shroud)
         else:
             print(f'{self.__class__.__name__}.shroud is None')
     
@@ -91,8 +91,8 @@ class BezierChannel(object):
         return curve
     
     def get_channel_from_control_points(self):
-        self.fitted_hub = self.__get_from_control_points(self.control_points_hub, self.hub_degress)
-        self.fitted_shroud = self.__get_from_control_points(self.control_points_shroud, self.shroud_degress)
+        self.fitted_hub = self.__get_from_control_points(self.control_points_hub, self.hub_degrees)
+        self.fitted_shroud = self.__get_from_control_points(self.control_points_shroud, self.shroud_degrees)
     
     def draw_channel(self, show: bool = False, width: int = 1000, height: int = 800):
         fig = go.Figure(data=[
