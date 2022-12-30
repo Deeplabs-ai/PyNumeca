@@ -786,7 +786,7 @@ class numecaParser(OrderedDict):
             # Sections divided in list
             self.importZRNpyArrayList(section)
             pass
-        elif isinstance(section, np.array):
+        elif isinstance(section, np.ndarray):
             # Single section
             self.importZRNpyArray(section)
         else:
