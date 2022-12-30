@@ -1,6 +1,8 @@
 from collections import OrderedDict
 
 import numpy as np
+import re
+
 from copy import copy, deepcopy
 
 from PyNumeca.reader.iecEntry import iecEntry
@@ -14,10 +16,11 @@ class numecaParser(OrderedDict):
         super().__init__()
         self.fileName = filename
         self.stringData = ""
-        self.parsing()
+
 
         if filename != "":
             self.load(filename)
+            self.parsing()
 
     def load(self, filename):
         self.fileName = filename
@@ -221,6 +224,7 @@ class numecaParser(OrderedDict):
         self['ROOT'], temp = self.deepTree(self.stringData, 0)
         self['ROOT'] = self.deep_reorder_zrcurve(self['ROOT'])
         #self.merge_ZR()
+        self.cleanUnusedBasicCurves()
 
     def deep_reorder_zrcurve(self, group):
         new_group = iecGroup()
@@ -496,13 +500,13 @@ class numecaParser(OrderedDict):
             item.THETA = []
             for index in range(len(item.X)):
                 item.R.append(np.hypot(item.Y[index], item.X[index]))
-                item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
+                item.THETA.append(np.arctan2(item.Y[index], item.X[index]))
         for item in ni_blade_geometry.pressureList:
             item.R = []
             item.THETA = []
             for index in range(len(item.X)):
                 item.R.append(np.hypot(item.Y[index], item.X[index]))
-                item.THETA.append(np.arctan2(item.X[index], item.Y[index]))
+                item.THETA.append(np.arctan2(item.Y[index], item.X[index]))
 
     def cylCoordDefined(self, row_number=0, blade_number=0):
         ni_blade_geometry = self.retrieveNiBladeGeometry(row_number, blade_number)
@@ -653,6 +657,7 @@ class numecaParser(OrderedDict):
                     pass
         return (basic_curve_dict)
 
+
     def append_and_update_curves(self, basic_curve_dict, vertex_list):
         for item in basic_curve_dict.items():
             curve = item[1][1]
@@ -746,12 +751,180 @@ class numecaParser(OrderedDict):
 
     def importZRNpyArray(self, section):
         if (np.all(section[:,3]==0)):
+            self.setNumberOfBasicCurvesHub(1)
             self.importZRNpyHubArray(section)
         elif (np.all(section[:,3]==1)):
+            self.setNumberOfBasicCurvesShroud(1)
             self.importZRNpyShroudArray(section)
         else:
-            print ("ERRORE ARRAY NON COERENTE")
+            raise Exception ("ERROR: NON COHERENT ARRAY")
 
+    def importZRNpyArrayList(self, sections_list):
+        if (np.all(sections_list[0][0,:,3]==0)):
+            # Hub section
+            self.setNumberOfBasicCurvesHub(len(sections_list))
+            self.updateGenericSectionsFromList(sections_list, "channel_curve_hub_0")
+        elif (np.all(sections_list[0][0,:,3]==1)):
+            # Shroud section
+            self.setNumberOfBasicCurvesShroud(len(sections_list))
+            self.updateGenericSectionsFromList(sections_list,"channel_curve_shroud_0")
+
+    def updateGenericSectionsFromList(self, section_list, hub_or_shroud):
+        names_of_basic_curve_list = self.getNamesListOfBasicCurvesGeneric(hub_or_shroud)
+        if len(names_of_basic_curve_list) != len(section_list):
+            raise Exception ("ERROR: mismatch between endwalls sections number")
+
+        for idx, curve_name in enumerate(names_of_basic_curve_list):
+            basic_curve_dict = self.get_basic_curve_dict()
+            curve = basic_curve_dict[curve_name][1]
+            curve.updateArrays(section_list[idx][0,:, 2], section_list[idx][0,:, 1])
+            curve.numberOfPoints = section_list[idx].shape[1]
+
+
+    def importZRNpyArray2(self, section):
+        if isinstance(section, list) and isinstance(section[0], np.ndarray):
+            # Sections divided in list
+            self.importZRNpyArrayList(section)
+            pass
+        elif isinstance(section, np.array):
+            # Single section
+            self.importZRNpyArray(section)
+        else:
+            raise Exception ("ERROR: wrong format of endwalls ")
+
+    def getNumberOfBasicCurvesHub(self):
+        return len(self.getNamesListOfBasicCurvesHub())
+
+    def getNumberOfBasicCurvesShroud(self):
+        return len(self.getNamesListOfBasicCurvesShroud())
+
+    def getNamesListOfBasicCurvesHub(self):
+        return self.getNamesListOfBasicCurvesGeneric("channel_curve_hub_0")
+
+    def getNamesListOfBasicCurvesShroud(self):
+        return self.getNamesListOfBasicCurvesGeneric("channel_curve_shroud_0")
+
+    def getNamesListOfBasicCurvesGeneric(self, hub_or_shroud):
+        vertex_list = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][hub_or_shroud]
+        vertex_number = -1  # Because the first one is always used twice
+        names_list_of_basic_curves = []
+        for key, item in vertex_list.items():
+            if "VERTEX" in key:
+                vertex_number += 1
+                names_list_of_basic_curves.append(item.value[0])
+        del names_list_of_basic_curves[0]
+        return names_list_of_basic_curves
+
+
+    def setNumberOfBasicCurvesHub(self, number):
+        return self.setNumberOfBasicCurvesGeneric(number, "channel_curve_hub_0")
+        pass
+    def setNumberOfBasicCurvesShroud(self, number):
+        return self.setNumberOfBasicCurvesGeneric(number, "channel_curve_shroud_0")
+        pass
+    def setNumberOfBasicCurvesGeneric(self, number, hub_or_shroud):
+        basic_curve_dict = self.get_basic_curve_dict()
+        names_list = self.getNamesListOfBasicCurvesGeneric(hub_or_shroud)
+        if (number < len(names_list)):
+            for i in range(len(names_list)-number):
+                self.removeLastBasicCurveGeneric(hub_or_shroud)
+        elif (number > len(names_list)):
+            for i in range(number-len(names_list)):
+                self.addBasicCurveGeneric(hub_or_shroud)
+    def removeLastBasicCurveHub(self):
+        return self.removeLastBasicCurveGeneric("channel_curve_hub_0")
+
+    def removeLastBasicCurveShroud(self):
+        return self.removeLastBasicCurveGeneric("channel_curve_shroud_0")
+    def removeLastBasicCurveGeneric(self, hub_or_shroud):
+        names_of_basic_curve_list =  self.getNamesListOfBasicCurvesGeneric(hub_or_shroud)
+        if len(names_of_basic_curve_list) <= 1:
+            raise Exception ("Minimum basic curve number already reached")
+        basic_curve_dict = self.get_basic_curve_dict()
+        vertex_list = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][hub_or_shroud]
+        last_item_name = names_of_basic_curve_list[-1]
+        for key, item in vertex_list.items():
+            if item.value[0] == last_item_name:
+                del vertex_list[key]
+                break
+        del basic_curve_dict[last_item_name]
+
+    def addBasicCurveItem(self, new_item_name, new_curve_name):
+        main_channel = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]
+        first_item_key = next(iter(main_channel))
+
+        for key, item in main_channel.items():
+            if "basic_curve" in key:
+                try:
+                    zrList = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][key]["zrcurve_0"]
+                    first_basic_curve = item
+                    break
+                except:
+                    pass
+
+        main_channel[new_item_name] = deepcopy(first_basic_curve)
+        main_channel.move_to_end(new_item_name, False)
+        main_channel.move_to_end(first_item_key, False)
+        main_channel[new_item_name]["NAME"].value = new_curve_name
+    def addBasicCurveHub(self):
+        return self.addBasicCurveGeneric("channel_curve_hub_0")
+    def addBasicCurveShroud(self):
+        return self.addBasicCurveGeneric("channel_curve_shroud_0")
+
+    def cleanUnusedBasicCurves(self):
+        names_of_used_basic_curve_list = self.getNamesListOfBasicCurvesHub() + self.getNamesListOfBasicCurvesShroud()
+        main_channel = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]
+        list_of_keys_to_be_removed = []
+        for key, item in main_channel.items():
+            if "basic_curve" in key and item["NAME"].value not in names_of_used_basic_curve_list:
+                list_of_keys_to_be_removed.append(key)
+
+        for key in list_of_keys_to_be_removed:
+            del main_channel[key]
+
+    def addBasicCurveGeneric(self, hub_or_shroud):
+        names_of_basic_curve_list = self.getNamesListOfBasicCurvesHub() + self.getNamesListOfBasicCurvesShroud()
+        vertex_list = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][hub_or_shroud]
+        last_curve_name = names_of_basic_curve_list[-1]
+        last_vertex_name = list(vertex_list.keys())[-2]
+        last_item_name = list(vertex_list.keys())[-1]
+        last_number = re.search(r'\d+$', last_curve_name)
+
+        if last_number:
+            residual = re.search(r'.+?(?=\d+$)', last_curve_name).group(0)
+            last_number = int(last_number.group(0))
+        else:
+            residual = last_curve_name
+            last_number = 0
+        free_name_found = True
+        counter = 0
+        while free_name_found:
+            counter += 1
+            new_curve_name = residual+str(last_number+counter)
+            free_name_found = new_curve_name in names_of_basic_curve_list
+        free_vertex_key_found = True
+        counter = 0
+        while free_vertex_key_found:
+            counter += 1
+            new_vertex_key = "VERTEX_"+str(counter)
+            free_vertex_key_found = new_vertex_key in vertex_list.keys()
+
+        new_item = iecEntry(vertex_list[last_vertex_name])
+        new_item.value = [new_curve_name, str(1)]
+        vertex_list[new_vertex_key] = new_item
+        vertex_list.move_to_end(last_item_name)
+
+        basic_curve_dict = self.get_basic_curve_dict()
+
+        free_name_found = True
+        counter = 0
+        while free_name_found:
+            counter += 1
+            new_item_name = "basic_curve_"+str(counter)
+            free_name_found = {k:v for k,v in basic_curve_dict.items() if v[0] == new_item_name}
+
+        self.addBasicCurveItem(new_item_name, new_curve_name)
+        pass
 
 
 
