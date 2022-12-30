@@ -1,6 +1,8 @@
 import logging
 import os
 
+import numpy as np
+
 from PyNumeca.reader.numecaParser import numecaParser
 
 
@@ -42,20 +44,20 @@ def test_reading_geomturbo():
         item.importNpyArrayCyl(output[0])
 
         # Test export array for hub and shroud
-        outHub, outShroud = item.exportZRNpyArrays()
-        logging.info(outHub.shape, outShroud.shape)
+        out_hub, out_shroud = item.exportZRNpyArrays()
+        logging.info(out_hub.shape, out_shroud.shape)
 
         # Test import array for hub and shroud
-        #item.importZRNpyArray(outHub[0])
-        #item.importZRNpyArray(outShroud[0])
+        # item.importZRNpyArray(outHub[0])
+        # item.importZRNpyArray(outShroud[0])
 
         # Test export array for hub and shroud as list of segments
-        outHubList, outShroudList = item.exportZRNpyArraysList()
-        logging.info(len(outHubList), len(outShroudList))
+        out_hub_list, out_shroud_list = item.exportZRNpyArraysList()
+        logging.info(len(out_hub_list), len(out_shroud_list))
 
         # Test import of list of arrays for hub and shroud
-        item.importZRNpyArray2(outHubList)
-        item.importZRNpyArray2(outShroudList)
+        item.importZRNpyArray2(out_hub_list)
+        item.importZRNpyArray2(out_shroud_list)
 
         with open(f"test_file_{i}.txt", "w") as f:
             f.write(item.outputString())

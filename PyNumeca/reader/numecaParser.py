@@ -750,12 +750,12 @@ class numecaParser(OrderedDict):
         curve.numberOfPoints = section.shape[0]
 
     def importZRNpyArray(self, section):
-        if (np.all(section[:,3]==0)):
+        if (np.all(section[0,:,3]==0)):
             self.setNumberOfBasicCurvesHub(1)
-            self.importZRNpyHubArray(section)
-        elif (np.all(section[:,3]==1)):
+            self.importZRNpyHubArray(section[0])
+        elif (np.all(section[0,:,3]==1)):
             self.setNumberOfBasicCurvesShroud(1)
-            self.importZRNpyShroudArray(section)
+            self.importZRNpyShroudArray(section[0])
         else:
             raise Exception ("ERROR: NON COHERENT ARRAY")
 
@@ -786,7 +786,7 @@ class numecaParser(OrderedDict):
             # Sections divided in list
             self.importZRNpyArrayList(section)
             pass
-        elif isinstance(section, np.array):
+        elif isinstance(section, np.ndarray):
             # Single section
             self.importZRNpyArray(section)
         else:
@@ -847,7 +847,8 @@ class numecaParser(OrderedDict):
             if item.value[0] == last_item_name:
                 del vertex_list[key]
                 break
-        del basic_curve_dict[last_item_name]
+        basic_curve_name_to_be_removed = basic_curve_dict[last_item_name][0]
+        del self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][basic_curve_name_to_be_removed]
 
     def addBasicCurveItem(self, new_item_name, new_curve_name):
         main_channel = self["ROOT"]["GEOMTURBO"]["CHANNEL_0"]
