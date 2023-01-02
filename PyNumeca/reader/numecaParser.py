@@ -691,7 +691,7 @@ class numecaParser(OrderedDict):
                 if not avoid_first_occurrence:
                     curve_name = item.value[0]
                     curve = basic_curve_dict[curve_name][1]
-                    curve_array = np.vstack([zeros_or_ones(curve.numberOfPoints), curve.R, curve.Z, zeros_or_ones(curve.numberOfPoints)]).transpose()
+                    curve_array = np.vstack([np.zeros(curve.numberOfPoints), curve.R, curve.Z, zeros_or_ones(curve.numberOfPoints)]).transpose()
                     curve_array = np.expand_dims(curve_array,axis=0)
                     curve_array_list.append(curve_array)
                 else:
@@ -704,7 +704,10 @@ class numecaParser(OrderedDict):
         return (hub_array_list, shroud_array_list)
 
     def vStackArray(self, arrayList):
-        vStackArray = arrayList[0]
+        if arrayList[0].shape[1] == 2:
+            vStackArray = self.fillZRArray(arrayList[0], 50)
+        else:
+            vStackArray = arrayList[0]
         for array in arrayList[1:]:
             if array.shape[1] == 2:
                 array = self.fillZRArray(array, 50)
@@ -722,7 +725,7 @@ class numecaParser(OrderedDict):
         X = np.linspace(0,1,num=nPoints)
         R = np.interp(X, ref, array[0,:,1])
         Z = np.interp(X, ref, array[0,:,2])
-        newArray = np.vstack([zeros_or_ones(nPoints), R, Z,zeros_or_ones(nPoints)]).transpose()
+        newArray = np.vstack([np.zeros(nPoints), R, Z,zeros_or_ones(nPoints)]).transpose()
         return np.expand_dims(newArray,axis=0)
 
     def exportZRNpyArrays(self):
