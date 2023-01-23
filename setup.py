@@ -7,6 +7,7 @@ setup(
               'PyNumeca.fine',
               'PyNumeca.preprocessing',
               'PyNumeca.postprocessing',
+              'PyNumeca.utils',
               'PyNumeca.igg',
               'PyNumeca.reader',
                ],  # Chose the same as "name"
