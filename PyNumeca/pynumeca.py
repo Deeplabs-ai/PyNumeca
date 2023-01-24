@@ -6,6 +6,7 @@ import pandas as pd
 
 from PyNumeca.fine import fine
 from PyNumeca.igg import igg
+from PyNumeca.postprocessing import mf
 
 
 class Simulation(object):
@@ -91,9 +92,7 @@ class Simulation(object):
     def read_mf(self):
         if self.runfile is not None:
             mf_path = os.path.splitext(self.runfile)[0] + '.mf'
-            if os.path.exists(mf_path):
-                with open(mf_path, 'r') as f:
-                    return f.read()
+            return mf.read_mf(mf_file=mf_path)
 
     def run_parallel_computation(self, batch_path: str):
         self.runpid = fine.run_parallel_computation(batch_path)
