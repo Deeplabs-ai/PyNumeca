@@ -8,6 +8,7 @@ from PyNumeca.postprocessing.mf import read_mf
 from PyNumeca.utils.boundaries import Boundaries
 from PyNumeca.reader.numecaParser import numecaParser
 from PyNumeca.utils.geometric import car2cil
+from PyNumeca.utils.units import convert_rotational_speed
 
 
 class CentrifugalCompressor(object):
@@ -32,9 +33,9 @@ class CentrifugalCompressor(object):
     def update_boundaries(self, m: float, pt_in: float, tt_in: float):
         self.boundaries = Boundaries(fluid=self.fluid, m=m, pt_in=pt_in, tt_in=tt_in)
 
-    def load_boundaries_from_mf(self, mf_path):
+    def load_boundaries_and_performances_from_mf(self, mf_path):
         mf_dict = read_mf(mf_path)
-        self.rotating_speed = mf_dict['Omega']
+        self.rotating_speed = convert_rotational_speed(mf_dict['Omega'], to_rpm=False)
         self.total_to_total_isentropic_efficiency = mf_dict['Eta_tt']
         self.total_to_total_pressure_ratio = mf_dict['Beta_tt']
 
