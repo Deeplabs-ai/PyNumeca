@@ -1,0 +1,175 @@
+ 
+PROJECT NAME :   /usr/archivio/2032_AI/archivio_TF/c3/Notebooks/Design/results/iteration_0/blade_0/blade_0_c2_161/blade_0_c2_161.run
+ 
+ Mesh data   
+ ---------   
+ 
+  Number_of_blocks                     28
+  Total_number_of_nodes           5745856
+ 
+ Fluid properties  
+ ----------------  
+ 
+  Fluid_type                     Real gas      
+ 
+ Weight factors used for averaging 
+ --------------------------------- 
+ 
+  For static pressure                    cell face area 
+  For all other variables                absolute cell face mass flux 
+ 
+ 
+ *********************************************************************
+ *                                                                   *
+ * GLOBAL RESULTS AT INLET AND OUTLET                                *
+ *                                                                   *
+ *********************************************************************
+ 
+ 
+                                           INLET              OUTLET 
+ Geometrical data  
+ ----------------  
+ 
+  Hub_radius                             0.10000E-13         0.14318       [m]
+  Shroud_radius                          0.29841E-01         0.14318       [m]
+  Area                                   0.21519E-03         0.73341E-03   [m2]
+ 
+  Number_of_blades                          13                    6        
+ 
+  Rotational_speed                       -3979.4              0.0000       [rad/s]
+ 
+ Fluid properties  
+ ----------------  
+ 
+  Specific_heat (Cp)                    1041.3              1042.4       [J/(kg K)]
+  Specific_heat_ratio                   1.3990              1.3984        [  ]
+ 
+ Absolute velocities  
+ -------------------  
+ 
+  Radial_velocity                        0.26233E-17          32.836       [m/s]
+  Absolute_tangential_velocity          -0.58931E-18         -54.677       [m/s]
+  Axial_velocity                          40.493             0.10870       [m/s]
+  Absolute_velocity_magnitude             40.493              65.066       [m/s]
+  Meridional_flow_angle                  0.37119E-17          89.810       [deg]
+  Absolute_blade-to-blade_flow_angle    -0.83385E-18         -59.013       [deg]
+  Absolute_Mach_number                   0.11453             0.17009       [   ]
+  Swirl                                 -0.78851E-20         -7.8283       [m2/s]
+ 
+ Relative velocities  
+ -------------------  
+ 
+  Relative_tangential_velocity            80.646             -54.677       [m/s]
+  Relative_velocity_magnitude             91.104              65.066       [m/s]
+  Relative_blade-to-blade_flow_angle      63.339             -59.013       [deg]
+  Relative_Mach_number                   0.25767             0.17009       [   ] 
+ 
+ Static conditions 
+ ----------------- 
+ 
+  Static_pressure                        1276308.43          2054847.59    [Pa]
+  Static_temperature                      300.86              352.34       [K]
+  Density                                 14.282              19.642       [kg/m3]
+ 
+ Total conditions 
+ ---------------- 
+ 
+  Absolute_total_pressure                1288000.00          2099107.37    [Pa]
+  Absolute_total_temperature              301.65              354.45       [K]
+ 
+  Relative_total_pressure                1341017.25          2099107.37    [Pa]
+  Relative_total_temperature              305.13              354.45       [K]
+  Rothalpy                                322599.62           377606.59    [J/kg]
+ 
+ Mass flow  
+ ---------  
+ 
+  Mass_flow                               1.6101              1.6100       [kg/s]
+  Absolute_Mass_flow                      1.6101              1.6580       [kg/s]
+  (Different in case of backflow) 
+ 
+ Global performance 
+ ------------------ 
+ 
+  Static_pressure_ratio                          1.6100    
+  Absolute_total_pressure_ratio                  1.6297    
+ 
+  Static_temperature_ratio                       1.1711    
+  Absolute_total_temperature_ratio               1.1750    
+ 
+  Isentropic_efficiency                         0.85355        (total-total)
+ 
+ 
+  Axial_thrust                                  21205.        [N]
+  Torque                                        23.012        [N m]
+  Power                                        -91573.        [W]
+ 
+ *********************************************************************
+ *
+ *  MASSFLOW INTEGRATED ON INLET/OUTLET GROUPS                       *
+ *
+ *********************************************************************
+ INLET GROUPS:
+ *************
+INLET       1.6102    
+ OUTLET GROUPS:
+ **************
+Cascade_Diffuser_wheel_flux_1_Cascade_Diffuser_main_downStream_outlet       1.6100    
+ 
+ 
+ *********************************************************************
+ *                                                                   *
+ *  GLOBAL RESULTS AT ROTOR/STATOR INTERFACE ID  10                  *
+ *                                                                   *
+ *********************************************************************
+ 
+ 
+ Geometrical data  
+ ----------------  
+ 
+  Hub_radius                               0.67695E-01    [m]
+  Shroud_radius                            0.68117E-01    [m]
+  Area                                     0.25905E-03    [m2]
+ 
+  Number_of_blades                         13       6        
+ 
+  Rotational_speed                    -3979.4        0.0   [rad/s]
+ 
+ Fluid properties  
+ ----------------  
+ 
+  Specific_heat (Cp)                      1041.8        [J/(kg K)]
+  Specific_heat_ratio                     1.3987         [  ]
+ 
+ Absolute velocities  
+ -------------------  
+ 
+  Radial_velocity                           47.580        [m/s]
+  Absolute_tangential_velocity             -202.92        [m/s]
+  Axial_velocity                            2.0505        [m/s]
+  Absolute_velocity_magnitude               208.83        [m/s]
+  Meridional_flow_angle                     87.534        [deg]
+  Absolute_blade-to-blade_flow_angle       -76.793        [deg]
+  Absolute_Mach_number                     0.56037        [   ]
+  Swirl                                    -13.764        [m2/s]
+ 
+ Static conditions 
+ ----------------- 
+ 
+  Static_pressure                          1786700.51     [Pa]
+  Static_temperature                        334.32        [K]
+  Density                                   17.842        [kg/m3]
+ 
+ Total conditions 
+ ---------------- 
+ 
+  Absolute_total_pressure                  2194625.74     [Pa]
+  Absolute_total_temperature                355.33        [K]
+ 
+  Rothalpy                                324563.33           377651.14    [J/kg]
+ 
+ Mass flow  
+ ---------  
+ 
+  Mass_flow                                 1.6100        [kg/s]
+ 

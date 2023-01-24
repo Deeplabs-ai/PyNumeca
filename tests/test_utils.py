@@ -1,5 +1,6 @@
 from PyNumeca.utils import boundaries
 import numpy as np
+from pyfluids import FluidsList
 
 
 def test_boundaries():
@@ -18,7 +19,7 @@ def test_boundaries():
 
     beta_target = 1.364
 
-    bd = boundaries.Boundaries(m=m, pt_in=pt_in, tt_in=tt_in, R=R, k=k, cp=cp, mu=mu)
+    bd = boundaries.Boundaries(m=m, pt_in=pt_in, tt_in=tt_in, R=R, k=k, cp=cp, mu=mu, fluid=FluidsList.Nitrogen)
 
     f = lambda x: float(x)
 
