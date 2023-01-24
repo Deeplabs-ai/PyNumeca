@@ -3,3 +3,4 @@ plotly
 pandas
 scipy
 joblib
+pyfluids
