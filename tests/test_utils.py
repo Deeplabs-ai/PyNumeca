@@ -8,18 +8,12 @@ def test_boundaries():
     pt_in = 110000
     tt_in = 85
 
-    R = 296.8
-    k = 1.399
-
-    cp = 1.041300e+03
-    mu = 0.00003
-
     de = 0.08
     omega = 3454
 
     beta_target = 1.364
 
-    bd = boundaries.Boundaries(m=m, pt_in=pt_in, tt_in=tt_in, R=R, k=k, cp=cp, mu=mu, fluid=FluidsList.Nitrogen)
+    bd = boundaries.Boundaries(m=m, pt_in=pt_in, tt_in=tt_in, fluid=FluidsList.Nitrogen)
 
     f = lambda x: float(x)
 

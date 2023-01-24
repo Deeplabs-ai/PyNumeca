@@ -8,8 +8,9 @@ class Boundaries(object):
     Class representing the boundaries of a turbomachine.
     """
     update_enabled = False
+    __R = 8.314462618
 
-    def __init__(self, fluid: pyfluids.fluids.fluid.Fluid, m: float, pt_in: float, tt_in: float, R: float, k: float, cp: float, mu: float):
+    def __init__(self, fluid: pyfluids.fluids.fluid.FluidsList, m: float, pt_in: float, tt_in: float):
         """
         Initialize the boundaries of a turbomachine.
         
@@ -23,39 +24,51 @@ class Boundaries(object):
             - cp (float): Specific heat at constant pressure
             - mu (float): Dynamic viscosity
         """
-        
+
         self.m = m
         self.pt_in = pt_in
         self.tt_in = tt_in
-        self.R = R
-        self.k = k
 
-        self.fluid = Fluid(fluid).with_state(
-                           Input.pressure(pt_in), Input.temperature(tt_in)
-                           )
+        self.fluid = fluid
 
-        self.cp = self.fluid.specific_heat
-        self.mu = self.fluid.dynamic_viscosity
+        actual_fluid = self.get_actual_fluid()
 
-        self.rho = pt_in / (R * tt_in)
-        self.a = float(np.sqrt(tt_in * R * k))
+        self.cp = actual_fluid.specific_heat
+        self.mu = actual_fluid.dynamic_viscosity
+        self.R = self.get_gas_constant(actual_fluid)
+
+        self.k = self.cp / (self.cp - self.R)
+        self.rho = pt_in / (self.R * tt_in)
+        self.a = float(np.sqrt(tt_in * self.R * self.k))
 
         self.update_enabled = True
-    
+
+    def get_gas_constant(self, fluid: pyfluids.Fluid):
+        return self.__R / fluid.molar_mass
+
+    def get_actual_fluid(self):
+        return Fluid(self.fluid).with_state(
+            Input.pressure(self.pt_in),
+            Input.temperature(self.tt_in)
+        )
+
     def update(self):
         """
         Update the density and speed of sound of the turbomachine.
         """
+
+        actual_fluid = self.get_actual_fluid()
+        actual_fluid.update(Input.pressure(self.pt_in), Input.temperature(self.tt_in))
+
+        self.R = self.get_gas_constant(actual_fluid)
+        self.cp = actual_fluid.specific_heat
+        self.mu = actual_fluid.dynamic_viscosity
+        self.k = self.cp / (self.cp - self.R)
+
         self.rho = self.pt_in / self.R * self.tt_in
         self.a = float(np.sqrt(self.tt_in * self.R * self.k))
 
-        self.fluid.update(Input.pressure(self.pt_in), Input.temperature(self.tt_in))
-
-        self.cp = self.fluid.specific_heat
-        self.mu = self.fluid.dynamic_viscosity
-        
-    
-    def __setattr__(self, name:str, value):
+    def __setattr__(self, name: str, value):
         """
         Override the setter method to make the class immutable.
         
@@ -70,9 +83,9 @@ class Boundaries(object):
             msg = "%s is an immutable attribute." % name
             raise AttributeError(msg)
         else:
-            if name in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu"):
+            if name in ("m", "pt_in", "tt_in"):
                 self.update() if self.update_enabled else None
-                
+
             super().__setattr__(name, value)
 
     def phi(self, omega: float, de: float) -> np.ndarray:
@@ -86,7 +99,7 @@ class Boundaries(object):
         Returns:
             - np.ndarray: The flow coefficient.
         """
-        return np.array(self.m / (self.rho * omega * de**3)).reshape(-1, 1)
+        return np.array(self.m / (self.rho * omega * de ** 3)).reshape(-1, 1)
 
     def re(self, omega: float, de: float) -> np.ndarray:
         """
@@ -99,7 +112,7 @@ class Boundaries(object):
         Returns:
             - np.ndarray: The Reynolds number.
         """
-        return np.array(self.rho * omega * de**2 / self.mu).reshape(-1, 1)
+        return np.array(self.rho * omega * de ** 2 / self.mu).reshape(-1, 1)
 
     def ma(self, omega: float, de: float) -> np.ndarray:
         """
@@ -127,7 +140,7 @@ class Boundaries(object):
         Returns:
             - float: The work coefficient.
         """
-        return (torque * eta) / (self.m * omega * de**2)
+        return (torque * eta) / (self.m * omega * de ** 2)
 
     def psi_p(self, power: float, omega: float, de: float, eta: float) -> float:
         """
@@ -142,8 +155,8 @@ class Boundaries(object):
         Returns:
             - float: The work coefficient.
         """
-        return (power * eta) / (self.m * omega**2 * de**2)
-    
+        return (power * eta) / (self.m * omega ** 2 * de ** 2)
+
     def psi_b(self, beta: float, omega: float, de: float):
         """
         Compute the work coefficient.
@@ -156,7 +169,7 @@ class Boundaries(object):
         Returns:
             - float: The work coefficient.
         """
-        return self.cp*self.tt_in/((de**2) * (omega**2))*(beta**((self.k-1)/self.k)-1)
+        return self.cp * self.tt_in / ((de ** 2) * (omega ** 2)) * (beta ** ((self.k - 1) / self.k) - 1)
 
     def beta(self, psi_is: float, omega: float, de: float) -> float:
         """
@@ -170,4 +183,4 @@ class Boundaries(object):
         Returns:
             - float: The compression ratio.
         """
-        return (psi_is * omega * de**2 / (self.cp * self.tt_in) +1)**(self.k/(self.k-1))
+        return (psi_is * omega * de ** 2 / (self.cp * self.tt_in) + 1) ** (self.k / (self.k - 1))
