@@ -1,4 +1,6 @@
 import numpy as np
+import pyfluids
+from pyfluids import Fluid, FluidsList, Input
 
 
 class Boundaries(object):
@@ -7,11 +9,12 @@ class Boundaries(object):
     """
     update_enabled = False
 
-    def __init__(self, m: float, pt_in: float, tt_in: float, R: float, k: float, cp: float, mu: float):
+    def __init__(self, fluid: pyfluids.fluids.fluid.Fluid, m: float, pt_in: float, tt_in: float, R: float, k: float, cp: float, mu: float):
         """
         Initialize the boundaries of a turbomachine.
         
         Parameters:
+            - fluid (pyfluids.fluids.fluid.Fluid): fluid type
             - m (float): Mass flow rate
             - pt_in (float): Total pressure at the inlet of the turbomachine
             - tt_in (float): Total temperature at the inlet of the turbomachine
@@ -26,8 +29,13 @@ class Boundaries(object):
         self.tt_in = tt_in
         self.R = R
         self.k = k
-        self.cp = cp
-        self.mu = mu
+
+        self.fluid = Fluid(fluid).with_state(
+                           Input.pressure(pt_in), Input.temperature(tt_in)
+                           )
+
+        self.cp = self.fluid.specific_heat
+        self.mu = self.fluid.dynamic_viscosity
 
         self.rho = pt_in / (R * tt_in)
         self.a = float(np.sqrt(tt_in * R * k))
@@ -40,6 +48,12 @@ class Boundaries(object):
         """
         self.rho = self.pt_in / self.R * self.tt_in
         self.a = float(np.sqrt(self.tt_in * self.R * self.k))
+
+        self.fluid.update(Input.pressure(self.pt_in), Input.temperature(self.tt_in))
+
+        self.cp = self.fluid.specific_heat
+        self.mu = self.fluid.dynamic_viscosity
+        
     
     def __setattr__(self, name:str, value):
         """
@@ -52,7 +66,7 @@ class Boundaries(object):
         Raises:
             - AttributeError: If the attribute is not one of "m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a".
         """
-        if not name in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled"):
+        if not name in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid"):
             msg = "%s is an immutable attribute." % name
             raise AttributeError(msg)
         else:
