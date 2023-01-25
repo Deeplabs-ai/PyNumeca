@@ -52,20 +52,20 @@ class Boundaries(object):
             Input.temperature(self.tt_in)
         )
 
-    def update(self):
+    def __update(self):
         """
         Update the density and speed of sound of the turbomachine.
         """
 
         actual_fluid = self.get_actual_fluid()
-        actual_fluid.update(Input.pressure(self.pt_in), Input.temperature(self.tt_in))
+        # actual_fluid.update(Input.pressure(self.pt_in), Input.temperature(self.tt_in))
 
         self.R = self.get_gas_constant(actual_fluid)
         self.cp = actual_fluid.specific_heat
         self.mu = actual_fluid.dynamic_viscosity
         self.k = self.cp / (self.cp - self.R)
 
-        self.rho = self.pt_in / self.R * self.tt_in
+        self.rho = self.pt_in / (self.R * self.tt_in)
         self.a = float(np.sqrt(self.tt_in * self.R * self.k))
 
     def __setattr__(self, name: str, value):
@@ -79,14 +79,26 @@ class Boundaries(object):
         Raises:
             - AttributeError: If the attribute is not one of "m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a".
         """
-        if not name in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid"):
+        if name == 'update_enabled':
+            super().__setattr__(name, value)
+            return
+        if name not in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid"):
             msg = "%s is an immutable attribute." % name
             raise AttributeError(msg)
         else:
-            if name in ("m", "pt_in", "tt_in"):
-                self.update() if self.update_enabled else None
+            if not self.update_enabled:
+                super().__setattr__(name, value)
+            else:
+                if name in ("m", "pt_in", "tt_in"):
+                    super().__setattr__(name, value)
+                    self.update_enabled = False
+                    self.__update()
+                    self.update_enabled = True
+                else:
+                    msg = "%s is an immutable attribute." % name
+                    raise AttributeError(msg)
 
-            super().__setattr__(name, value)
+
 
     def phi(self, omega: float, de: float) -> np.ndarray:
         """
