@@ -6,6 +6,7 @@ from PyNumeca.reader.numecaParser import numecaParser
 from typing import List
 import os
 import joblib
+from PyNumeca.utils.geometric import fitting_metrics
 
 
 class BezierChannel(object):
@@ -13,7 +14,8 @@ class BezierChannel(object):
                  control_points_hub: np.ndarray = None,
                  control_points_shroud: np.ndarray = None,
                  degree: int = 6,
-                 evaluation_points: int = 30):
+                 evaluation_points: int = 30,
+                 record_metrics: bool = False):
 
         self.hub = hub
         self.shroud = shroud
@@ -28,6 +30,22 @@ class BezierChannel(object):
         self.hub_degrees = None
         self.shroud_degrees = None
 
+        self.fitting_metrics = []
+        self.record_metrics = record_metrics
+    
+    def average_fitting_metrics(self):
+        max_ = []
+        mean_ = []
+
+        for metric in self.fitting_metrics:
+            max_.append(metric['max'])
+            mean_.append(metric['mean'])
+        
+        max_ = np.array(max_)
+        mean_ = np.array(mean_)
+
+        return max_, mean_
+
     def __fit_with_bezier(self, segments_list: list):
         controls = []
         degrees = []
@@ -41,6 +59,9 @@ class BezierChannel(object):
 
             deg = 1 if len(segment[0]) == 2 else self.degree
             points = get_bezier_parameters(segment[0, :, 0], segment[0, :, 1], segment[0, :, 2], degree=deg)
+            if self.record_metrics and segment.shape[1] > 2:
+                xvals, yvals, zvals = bezier_curve(points, nTimes=100)
+                self.fitting_metrics.append(fitting_metrics(segment[0, :, :3], np.vstack((xvals, yvals, zvals)).T))
 
             if i != len(segments_list) - 1:
                 del points[-1]
@@ -128,7 +149,7 @@ class BezierBlade(object):
     __TE_POINTS_NUMBER = 15
 
     def __init__(self, numpy_blade: np.ndarray = None, control_points: np.ndarray = None, bezier_degree: int | list = 6,
-                 evaluation_points: int | list = 100, is_blunt_te: bool = True, split_edges: bool = False):
+                 evaluation_points: int | list = 100, is_blunt_te: bool = True, split_edges: bool = False, record_metrics: bool = False):
 
         self.numpy_blade = numpy_blade  # (S, s, n, f)
         self.control_points = control_points
@@ -139,6 +160,22 @@ class BezierBlade(object):
 
         self.set_bezier_degree(bezier_degree)
         self.set_evaluation_points(evaluation_points)
+
+        self.fitting_metrics = []
+        self.record_metrics = record_metrics
+    
+    def average_fitting_metrics(self):
+        max_ = []
+        mean_ = []
+
+        for metric in self.fitting_metrics:
+            max_.append(metric['max'])
+            mean_.append(metric['mean'])
+        
+        max_ = np.array(max_)
+        mean_ = np.array(mean_)
+
+        return max_, mean_
 
     def set_bezier_degree(self, bezier_degree: int | list):
         if isinstance(bezier_degree, int):
@@ -205,15 +242,31 @@ class BezierBlade(object):
 
                 ss_control_points = np.array(
                     get_bezier_parameters(ss[:, 0], ss[:, 1], ss[:, 2], degree=self.__bezier_degree[0]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ss_le_control_points = np.array(
                     get_bezier_parameters(ss_le[:, 0], ss_le[:, 1], ss_le[:, 2], degree=self.__bezier_degree[1]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_le_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss_le[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_le_control_points = np.array(
                     get_bezier_parameters(ps_le[:, 0], ps_le[:, 1], ps_le[:, 2], degree=self.__bezier_degree[2]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_le_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps_le[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_control_points = np.array(
                     get_bezier_parameters(ps[:, 0], ps[:, 1], ps[:, 2], degree=self.__bezier_degree[3]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 assert (ss_control_points[-1] == ss_le_control_points[0]).all() and (
                             ss_le_control_points[-1] == ps_le_control_points[0]).all() and (
@@ -238,21 +291,45 @@ class BezierBlade(object):
 
                 ss_te_control_points = np.array(
                     get_bezier_parameters(ss_te[:, 0], ss_te[:, 1], ss_te[:, 2], degree=self.__bezier_degree[0]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_te_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss_te[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ss_control_points = np.array(
                     get_bezier_parameters(ss[:, 0], ss[:, 1], ss[:, 2], degree=self.__bezier_degree[1]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ss_le_control_points = np.array(
                     get_bezier_parameters(ss_le[:, 0], ss_le[:, 1], ss_le[:, 2], degree=self.__bezier_degree[2]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_le_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss_le[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_le_control_points = np.array(
                     get_bezier_parameters(ps_le[:, 0], ps_le[:, 1], ps_le[:, 2], degree=self.__bezier_degree[3]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_le_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps_le[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_control_points = np.array(
                     get_bezier_parameters(ps[:, 0], ps[:, 1], ps[:, 2], degree=self.__bezier_degree[4]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_te_control_points = np.array(
                     get_bezier_parameters(ps_te[:, 0], ps_te[:, 1], ps_te[:, 2], degree=self.__bezier_degree[5]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_te_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps_te[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 assert (ss_te_control_points[-1] == ss_control_points[0]).all() \
                        and (ss_control_points[-1] == ss_le_control_points[0]).all() \
@@ -285,12 +362,24 @@ class BezierBlade(object):
 
                 ss_control_points = np.array(
                     get_bezier_parameters(ss[:, 0], ss[:, 1], ss[:, 2], degree=self.__bezier_degree[0]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 le_control_points = np.array(
                     get_bezier_parameters(le[:, 0], le[:, 1], le[:, 2], degree=self.__bezier_degree[1]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(le_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(le[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_control_points = np.array(
                     get_bezier_parameters(ps[:, 0], ps[:, 1], ps[:, 2], degree=self.__bezier_degree[2]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 assert (ss_control_points[-1] == le_control_points[0]).all() and (
                             le_control_points[-1] == ps_control_points[0]).all(), \
@@ -319,15 +408,31 @@ class BezierBlade(object):
 
                 ss_control_points = np.array(
                     get_bezier_parameters(ss[:, 0], ss[:, 1], ss[:, 2], degree=self.__bezier_degree[0]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ss_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ss[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 le_control_points = np.array(
                     get_bezier_parameters(le[:, 0], le[:, 1], le[:, 2], degree=self.__bezier_degree[1]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(le_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(le[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 ps_control_points = np.array(
                     get_bezier_parameters(ps[:, 0], ps[:, 1], ps[:, 2], degree=self.__bezier_degree[2]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(ps_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(ps[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 te_control_points = np.array(
                     get_bezier_parameters(te[:, 0], te[:, 1], te[:, 2], degree=self.__bezier_degree[3]))
+                
+                if self.record_metrics:
+                    xvals, yvals, zvals = bezier_curve(te_control_points, nTimes=100)
+                    self.fitting_metrics.append(fitting_metrics(te[..., :3], np.vstack((xvals, yvals, zvals)).T))
 
                 assert (ss_control_points[-1] == le_control_points[0]).all() \
                        and (le_control_points[-1] == ps_control_points[0]).all() \
@@ -529,7 +634,8 @@ class BezierCompressor(object):
                  is_blunt_te: list, evaluation_points: list | List[list, list, list],
                  split_edges: list, is_main_blade_active: bool = True, is_splitter_active: bool = True,
                  is_diffuser_active: bool = True, is_channel_active: bool = True,
-                 channel_degree: int = 6, channel_evaluation_points: int = 30):
+                 channel_degree: int = 6, channel_evaluation_points: int = 30,
+                 record_metrics: bool = False):
 
         if not isinstance(bezier_degree[0], list):
             bezier_degree = [bezier_degree for _ in range(3)]
@@ -550,15 +656,15 @@ class BezierCompressor(object):
 
         if is_main_blade_active:
             self.main_blade = BezierBlade(bezier_degree=self.bezier_degree[0], is_blunt_te=self.is_blunt_te[0],
-                                          evaluation_points=self.evaluation_points[0], split_edges=split_edges[0])
+                                          evaluation_points=self.evaluation_points[0], split_edges=split_edges[0], record_metrics=record_metrics)
         if is_splitter_active:
             self.splitter = BezierBlade(bezier_degree=self.bezier_degree[1], is_blunt_te=self.is_blunt_te[1],
-                                        evaluation_points=self.evaluation_points[1], split_edges=split_edges[1])
+                                        evaluation_points=self.evaluation_points[1], split_edges=split_edges[1], record_metrics=record_metrics)
         if is_diffuser_active:
             self.diffuser = BezierBlade(bezier_degree=self.bezier_degree[2], is_blunt_te=self.is_blunt_te[2],
-                                        evaluation_points=self.evaluation_points[2], split_edges=split_edges[2])
+                                        evaluation_points=self.evaluation_points[2], split_edges=split_edges[2], record_metrics=record_metrics)
         if is_channel_active:
-            self.channel = BezierChannel(degree=channel_degree, evaluation_points=channel_evaluation_points)
+            self.channel = BezierChannel(degree=channel_degree, evaluation_points=channel_evaluation_points, record_metrics=record_metrics)
 
         self.main_blade_control_points = None
         self.splitter_control_points = None
