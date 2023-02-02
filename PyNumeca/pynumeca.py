@@ -32,6 +32,8 @@ class Simulation(object):
             self.trb_path = trb_path
         if version is None:
             self.version = constants.version
+        else:
+            self.version = version
 
         self.name = name
         self.runfile = None
