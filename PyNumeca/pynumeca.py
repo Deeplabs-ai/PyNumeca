@@ -3,6 +3,7 @@ import signal
 
 import numpy as np
 import pandas as pd
+from PyNumeca.constants import constants
 
 from PyNumeca.fine import fine
 from PyNumeca.igg import igg
@@ -18,7 +19,8 @@ class Simulation(object):
                  working_path: str = None,
                  geomturbo_path: str = None,
                  iec_path: str = None,
-                 trb_path: str = None):
+                 trb_path: str = None,
+                 version: str = None):
 
         if working_path is not None:
             self.working_path = working_path
@@ -28,6 +30,8 @@ class Simulation(object):
             self.iec_path = iec_path
         if trb_path is not None:
             self.trb_path = trb_path
+        if version is None:
+            self.version = constants.version
 
         self.name = name
         self.runfile = None
@@ -39,17 +43,19 @@ class Simulation(object):
             self.trb_path,
             self.geomturbo_path,
             # new_trb,
-            os.path.join(self.working_path, self.name, self.name + '.igg'))
+            os.path.join(self.working_path, self.name, self.name + '.igg'),
+            igg_version=self.version)
 
     def generate_run(self, index: int = 0):
         fine.fine_run_from_mesh(self.iec_path,
                                 os.path.join(self.working_path, self.name, self.name + '.igg'),
                                 os.path.join(self.working_path, self.name, self.name + '.iec'),
-                                index=index)
+                                index=index,
+                                fine_version=self.version)
 
     @staticmethod
-    def setup_parallel_computation(run_file_path: str, cores: int = 20):
-        fine.setup_parallel_computation(run_file_path, cores=cores)
+    def setup_parallel_computation(run_file_path: str, cores: int = 20, version: str = constants.version):
+        fine.setup_parallel_computation(run_file_path, cores=cores, fine_version=version)
 
     def run_pipeline(self, cores: int = 20, index: int = 0):
         self.make_mesh()
@@ -68,7 +74,7 @@ class Simulation(object):
         self.runfile = str(max(all_runfiles, key=os.path.getmtime))
         self.resfile = os.path.splitext(self.runfile)[0] + '.res'
         print('Latest run file:', self.runfile)
-        self.setup_parallel_computation(self.runfile, cores)
+        self.setup_parallel_computation(self.runfile, cores, version=self.version)
 
         run_file_dir = os.path.split(self.runfile)[0]
         run_file_base_name = os.path.splitext(os.path.split(self.runfile)[1])[0]
