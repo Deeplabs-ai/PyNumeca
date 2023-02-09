@@ -59,7 +59,7 @@ class Simulation(object):
     def setup_parallel_computation(run_file_path: str, cores: int = 20, version: str = constants.version):
         fine.setup_parallel_computation(run_file_path, cores=cores, fine_version=version)
 
-    def run_pipeline(self, cores: int = 20, index: int = 0):
+    def run_pipeline(self, cores: int = 20, index: int = 0, use_intel_mpi: bool = False):
         self.make_mesh()
         self.generate_run(index)
         all_subdirs = [os.path.join(self.working_path, self.name, d) for d in
@@ -82,7 +82,7 @@ class Simulation(object):
         run_file_base_name = os.path.splitext(os.path.split(self.runfile)[1])[0]
         batch_file = os.path.join(run_file_dir, run_file_base_name + '.batch')
 
-        self.run_parallel_computation(batch_file)
+        self.run_parallel_computation(batch_file, use_intel_mpi)
 
     def read_resfile(self):
         with open(self.resfile, 'r') as f:
@@ -102,8 +102,8 @@ class Simulation(object):
             mf_path = os.path.splitext(self.runfile)[0] + '.mf'
             return mf.read_mf(mf_file=mf_path)
 
-    def run_parallel_computation(self, batch_path: str):
-        self.runpid = fine.run_parallel_computation(batch_path)
+    def run_parallel_computation(self, batch_path: str, use_intel_mpi: bool = False):
+        self.runpid = fine.run_parallel_computation(batch_path, use_intel_mpi=use_intel_mpi)
 
     def kill_parallel_computation(self):
         if self.runpid is not None:

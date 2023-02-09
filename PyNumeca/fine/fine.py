@@ -37,10 +37,15 @@ def setup_parallel_computation(
     os.system(cmd)
 
 
-def run_parallel_computation(run_file_path: str, batch: bool = False):
+def run_parallel_computation(run_file_path: str, batch: bool = False, use_intel_mpi: bool = False):
     run_file_path = os.path.split(run_file_path)[0]
     run_file_base_name = os.path.splitext(os.path.split(run_file_path)[1])[0]
     batch_file = os.path.join(run_file_path, run_file_base_name + '.batch')
+
+    if use_intel_mpi:
+        with open(batch_file, 'a') as f:
+            f.write('-intel -intelmpi ')
+
 
     if batch:
         cmd = batch_file
