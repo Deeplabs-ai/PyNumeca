@@ -195,4 +195,4 @@ class Boundaries(object):
         Returns:
             - float: The compression ratio.
         """
-        return (psi_is * omega * de ** 2 / (self.cp * self.tt_in) + 1) ** (self.k / (self.k - 1))
+        return (psi_is * (omega**2) * (de ** 2) / (self.cp * self.tt_in) + 1) ** (self.k / (self.k - 1))
