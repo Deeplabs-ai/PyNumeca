@@ -43,7 +43,7 @@ class Boundaries(object):
 
         self.update_enabled = True
 
-        self.__class_attributes = ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid")
+        self.__class_attributes = ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid", "__class_attributes")
 
     def get_gas_constant(self, fluid: pyfluids.Fluid):
         return self.__R / fluid.molar_mass
