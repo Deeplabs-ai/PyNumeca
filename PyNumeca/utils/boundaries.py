@@ -43,6 +43,8 @@ class Boundaries(object):
 
         self.update_enabled = True
 
+        self.__class_attributes = ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid")
+
     def get_gas_constant(self, fluid: pyfluids.Fluid):
         return self.__R / fluid.molar_mass
 
@@ -82,7 +84,7 @@ class Boundaries(object):
         if name == 'update_enabled':
             super().__setattr__(name, value)
             return
-        if name not in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid"):
+        if name not in self.__class_attributes:
             msg = "%s is an immutable attribute." % name
             raise AttributeError(msg)
         else:
