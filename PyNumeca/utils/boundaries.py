@@ -68,38 +68,6 @@ class Boundaries(object):
         self.rho = self.pt_in / (self.R * self.tt_in)
         self.a = float(np.sqrt(self.tt_in * self.R * self.k))
 
-    def __setattr__(self, name: str, value):
-        """
-        Override the setter method to make the class immutable.
-        
-        Parameters:
-            - name (str): The name of the attribute to set.
-            - value: The value to set the attribute to.
-        
-        Raises:
-            - AttributeError: If the attribute is not one of "m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a".
-        """
-        if name == 'update_enabled':
-            super().__setattr__(name, value)
-            return
-        if name not in ("m", "pt_in", "tt_in", "R", "k", "cp", "mu", "rho", "a", "update_enabled", "fluid"):
-            msg = "%s is an immutable attribute." % name
-            raise AttributeError(msg)
-        else:
-            if not self.update_enabled:
-                super().__setattr__(name, value)
-            else:
-                if name in ("m", "pt_in", "tt_in"):
-                    super().__setattr__(name, value)
-                    self.update_enabled = False
-                    self.__update()
-                    self.update_enabled = True
-                else:
-                    msg = "%s is an immutable attribute." % name
-                    raise AttributeError(msg)
-
-
-
     def phi(self, omega: float, de: float) -> np.ndarray:
         """
         Compute the flow coefficient.
@@ -195,4 +163,4 @@ class Boundaries(object):
         Returns:
             - float: The compression ratio.
         """
-        return (psi_is * omega * de ** 2 / (self.cp * self.tt_in) + 1) ** (self.k / (self.k - 1))
+        return (psi_is * (omega**2) * (de ** 2) / (self.cp * self.tt_in) + 1) ** (self.k / (self.k - 1))
