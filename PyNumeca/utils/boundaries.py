@@ -17,8 +17,8 @@ class Boundaries(object):
         Parameters:
             - fluid (pyfluids.fluids.fluid.Fluid): fluid type
             - m (float): Mass flow rate
-            - pt_in (float): Total pressure at the inlet of the turbomachine
-            - tt_in (float): Total temperature at the inlet of the turbomachine
+            - pt_in (float): Total pressure at the inlet of the turbomachine [Pa]
+            - tt_in (float): Total temperature at the inlet of the turbomachine [K]
             - R (float): Specific gas constant
             - k (float): Specific heat ratio
             - cp (float): Specific heat at constant pressure
@@ -49,7 +49,8 @@ class Boundaries(object):
     def get_actual_fluid(self):
         return Fluid(self.fluid).with_state(
             Input.pressure(self.pt_in),
-            Input.temperature(self.tt_in)
+            # CASTING TO CELSIUS
+            Input.temperature(self.tt_in - 273.15)
         )
 
     def __update(self):
