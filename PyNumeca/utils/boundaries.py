@@ -10,7 +10,8 @@ class Boundaries(object):
     update_enabled = False
     __R = 8.314462618
 
-    def __init__(self, fluid: pyfluids.fluids.fluid.FluidsList, m: float, pt_in: float, tt_in: float):
+    def __init__(self, m: float, pt_in: float, tt_in: float,
+                 cp:float=None, mu:float=None, R: float =None, k:float=None,fluid: pyfluids.fluids.fluid.FluidsList=None):
         """
         Initialize the boundaries of a turbomachine.
         
@@ -31,11 +32,16 @@ class Boundaries(object):
 
         self.fluid = fluid
 
-        actual_fluid = self.get_actual_fluid()
+        if self.fuild is not None:
+            actual_fluid = self.get_actual_fluid()
 
-        self.cp = actual_fluid.specific_heat
-        self.mu = actual_fluid.dynamic_viscosity
-        self.R = self.get_gas_constant(actual_fluid)
+            self.cp = actual_fluid.specific_heat
+            self.mu = actual_fluid.dynamic_viscosity
+            self.R = self.get_gas_constant(actual_fluid)
+        else:
+            self.cp = cp
+            self.mu= mu
+            self.R = R
 
         self.k = self.cp / (self.cp - self.R)
         self.rho = pt_in / (self.R * tt_in)
@@ -52,22 +58,6 @@ class Boundaries(object):
             # CASTING TO CELSIUS
             Input.temperature(self.tt_in - 273.15)
         )
-
-    def __update(self):
-        """
-        Update the density and speed of sound of the turbomachine.
-        """
-
-        actual_fluid = self.get_actual_fluid()
-        # actual_fluid.update(Input.pressure(self.pt_in), Input.temperature(self.tt_in))
-
-        self.R = self.get_gas_constant(actual_fluid)
-        self.cp = actual_fluid.specific_heat
-        self.mu = actual_fluid.dynamic_viscosity
-        self.k = self.cp / (self.cp - self.R)
-
-        self.rho = self.pt_in / (self.R * self.tt_in)
-        self.a = float(np.sqrt(self.tt_in * self.R * self.k))
 
     def phi(self, omega: float, de: float) -> np.ndarray:
         """
