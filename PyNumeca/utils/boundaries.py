@@ -11,7 +11,7 @@ class Boundaries(object):
     __R = 8.314462618
 
     def __init__(self, m: float, pt_in: float, tt_in: float,
-                 cp:float=None, mu:float=None, R: float =None, k:float=None,fluid: pyfluids.fluids.fluid.FluidsList=None):
+                 cp:float=None, mu:float=None, R: float =None, fluid: pyfluids.fluids.fluid.FluidsList=None):
         """
         Initialize the boundaries of a turbomachine.
         
