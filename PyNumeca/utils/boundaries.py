@@ -32,7 +32,7 @@ class Boundaries(object):
 
         self.fluid = fluid
 
-        if self.fuild is not None:
+        if fuild is not None:
             actual_fluid = self.get_actual_fluid()
 
             self.cp = actual_fluid.specific_heat
