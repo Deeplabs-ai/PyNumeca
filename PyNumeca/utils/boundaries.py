@@ -45,7 +45,11 @@ class Boundaries(object):
 
         self.k = self.cp / (self.cp - self.R)
         self.rho = pt_in / (self.R * tt_in)
-        self.a = float(np.sqrt(tt_in * self.R * self.k))
+
+        if isinstance(tt_in, np.ndarray):
+            self.a = np.sqrt(tt_in * self.R * self.k)
+        else:
+            self.a = float(np.sqrt(tt_in * self.R * self.k))
 
         self.update_enabled = True
 
