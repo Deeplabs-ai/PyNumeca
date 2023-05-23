@@ -112,19 +112,19 @@ class GeomTurboParser(object):
         if self.splitter_active:
             splitter = ArrayWithName.get_curve_by_name(extracted_blades, self.__splitter_blade_name).array
         else:
-            splitter = None
+            splitter = np.empty(1)
 
         if self.diffuser_active:
             diffuser = ArrayWithName.get_curve_by_name(extracted_blades, self.__diffuser_blade_name).array
         else:
-            diffuser = None
+            diffuser = np.empty(1)
 
         mb_periodicity = ArrayWithName.get_curve_by_name(extracted_wheels, self.__impeller_wheel_name).array
 
         if self.diffuser_active:
             diff_periodicity = ArrayWithName.get_curve_by_name(extracted_wheels, self.__cascade_wheel_name).array
         else:
-            diff_periodicity = None
+            diff_periodicity = np.empty(1)
 
         return main_blade, splitter, diffuser, mb_periodicity, diff_periodicity
 
