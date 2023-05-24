@@ -56,15 +56,15 @@ class GeomTurboParser(object):
     def plot_channel(self, show: bool = False) -> go.Figure:
         # Create scatter plot trace
         hub = go.Scatter(
-            x=self.hub[:, 1],
-            y=self.hub[:, 0],
+            x=self.hub[0, :, 2],
+            y=self.hub[0, :, 1],
             mode='markers+lines',
             name='Hub',
         )
 
         shroud = go.Scatter(
-            x=self.shroud[:, 1],
-            y=self.shroud[:, 0],
+            x=self.shroud[0, :, 2],
+            y=self.shroud[0, :, 1],
             mode='markers+lines',
             name='Shroud',
         )
