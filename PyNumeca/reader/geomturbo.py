@@ -1,13 +1,15 @@
 from __future__ import annotations
-
+import plotly.graph_objects as go
 import os
 import re
 import time
 from typing import List, Tuple
 import numpy as np
 
+from PyNumeca.reader.numecaParser import numecaParser
 
-def find_between(text: str, start_keyword: str, end_keyword: str):
+
+def find_between(text: str, start_keyword: str, end_keyword: str) -> list:
     return re.findall(f'(?<={start_keyword}).*?(?={end_keyword})', text, re.DOTALL)
 
 
@@ -29,6 +31,8 @@ class GeomTurboParser(object):
     __main_blade_name = "Impeller_main"
     __splitter_blade_name = "Impeller_spl"
     __diffuser_blade_name = "Cascade_Diffuser_main"
+    __straight_lines_filling_points = 40
+
     def __init__(self,
                  target_path: str,
                  splitter_active: bool = True,
@@ -49,15 +53,41 @@ class GeomTurboParser(object):
 
         self.hub, self.shroud = self.get_channel()
 
-        # plt.plot(self.hub[:, 0], self.hub[:, 1])
-        # plt.plot(self.shroud[:, 0], self.shroud[:, 1])
-        # plt.show()
+    def plot_channel(self, show: bool = False) -> go.Figure:
+        # Create scatter plot trace
+        hub = go.Scatter(
+            x=self.hub[:, 1],
+            y=self.hub[:, 0],
+            mode='markers+lines',
+            name='Hub',
+        )
+
+        shroud = go.Scatter(
+            x=self.shroud[:, 1],
+            y=self.shroud[:, 0],
+            mode='markers+lines',
+            name='Shroud',
+        )
+
+        # Create layout
+        layout = go.Layout(
+            title='Channel',
+            xaxis=dict(title='X-axis'),
+            yaxis=dict(title='Y-axis')
+        )
+
+        # Create figure and add trace
+        fig = go.Figure(data=[hub, shroud], layout=layout)
+
+        # Display the plot
+        fig.show() if show else None
+        return fig
 
     @property
-    def shape(self):
+    def shape(self) -> Tuple[tuple, ...]:
         return self.main_blade.shape, self.splitter.shape, self.diffuser.shape
 
-    def get_blades(self):
+    def get_blades(self) -> Tuple[np.ndarray, ...]:
         blades_raw_content = find_between(self.raw_content,
                                           "NI_BEGIN NIBlade",
                                           "NI_END NIBlade")
@@ -91,7 +121,7 @@ class GeomTurboParser(object):
                         n_points = int(lines[i+2].strip())
                         section = []
                         for j in range(n_points+2):
-                            actual_line = lines[j + 3]
+                            actual_line = lines[i + j + 1]
                             if len(actual_line.strip().split()) == 3:
                                 section.append(list(map(float, actual_line.strip().split())))
 
@@ -102,20 +132,25 @@ class GeomTurboParser(object):
             pressure_text = blade_geom.split("suction")[1].split("pressure")[1]
 
             suction = extract_coordinates(suction_text)
+            suction = np.concatenate([suction, np.zeros(shape=(*suction.shape[:-1], 1))], axis=-1)
             pressure = extract_coordinates(pressure_text)
+            pressure = np.flip(np.concatenate([pressure, np.ones(shape=(*pressure.shape[:-1], 1))], axis=-1),
+                               axis=1)
 
             extracted_blades.append(ArrayWithName(name=name,
                                                   array=np.stack([suction, pressure], axis=0)))
 
+        def ed(array: np.ndarray):
+            return np.expand_dims(axis=0, a=array)
 
-        main_blade = ArrayWithName.get_curve_by_name(extracted_blades, self.__main_blade_name).array
+        main_blade = ed(ArrayWithName.get_curve_by_name(extracted_blades, self.__main_blade_name).array)
         if self.splitter_active:
-            splitter = ArrayWithName.get_curve_by_name(extracted_blades, self.__splitter_blade_name).array
+            splitter = ed(ArrayWithName.get_curve_by_name(extracted_blades, self.__splitter_blade_name).array)
         else:
             splitter = np.empty(1)
 
         if self.diffuser_active:
-            diffuser = ArrayWithName.get_curve_by_name(extracted_blades, self.__diffuser_blade_name).array
+            diffuser = ed(ArrayWithName.get_curve_by_name(extracted_blades, self.__diffuser_blade_name).array)
         else:
             diffuser = np.empty(1)
 
@@ -129,7 +164,7 @@ class GeomTurboParser(object):
         return main_blade, splitter, diffuser, mb_periodicity, diff_periodicity
 
 
-    def get_channel(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_channel(self) -> Tuple[np.ndarray, ...]:
         channel_text = find_between(self.raw_content, "NI_BEGIN CHANNEL", "NI_END CHANNEL")[0]
 
         curves = find_between(channel_text, "NI_BEGIN basic_curve", "NI_END basic_curve")
@@ -148,20 +183,64 @@ class GeomTurboParser(object):
         hub_composition = find_between(channel_text, "NI_BEGIN channel_curve hub", "NI_END channel_curve hub")[0]
         hub_curves = [f"curve_{item}" for item in list(set([int(match.group(1)) for match in re.finditer(r"curve_(\d+)", hub_composition)]))]
         hub_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, item).array for item in hub_curves]
+        hub_arrays = self.__fill_straight_curves(hub_arrays)
         hub_array = np.concatenate(hub_arrays)
+
+        hub_array = np.unique(hub_array, axis=0)
 
         shroud_composition = find_between(channel_text, "NI_BEGIN channel_curve shroud", "NI_END channel_curve shroud")[0]
         shroud_curves = [f"curve_{item}" for item in
                       list(set([int(match.group(1)) for match in re.finditer(r"curve_(\d+)", shroud_composition)]))]
         shroud_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, item).array for item in shroud_curves]
+        shroud_arrays = self.__fill_straight_curves(shroud_arrays)
         shroud_array = np.concatenate(shroud_arrays)
 
+        shroud_array = np.unique(shroud_array, axis=0)
+
         return hub_array, shroud_array
+
+    def __fill_straight_curves(self, curves_list) -> list:
+        new_curves = []
+        for curve in curves_list:
+            if curve.shape[0] == 2:
+                ref = np.array([0, 1])
+                x = np.linspace(0,1,num=self.__straight_lines_filling_points)
+                r = np.interp(x, ref, curve[:, 0]).reshape(-1, 1)
+                z = np.interp(x, ref, curve[:, 1]).reshape(-1, 1)
+
+                new_curve = np.concatenate([r, z], axis=1)
+            else:
+                new_curve = curve
+
+            new_curves.append(new_curve)
+        return new_curves
 
 
 if __name__ == '__main__':
     target = "tests/data/crio.geomTurbo"
+    diff_active = False
+    sp_active = True
 
     start = time.time()
-    parser = GeomTurboParser(target_path=target, diffuser_active=False)
-    print("Geomturbo reading execution time: ", time.time() - start)
+    parser = GeomTurboParser(target_path=target, diffuser_active=diff_active,
+                             splitter_active=sp_active)
+    new_execution_time = time.time() - start
+    print("Geomturbo reading execution time: ", new_execution_time)
+
+    # parser.plot_channel(True)
+    start = time.time()
+    old_parser = numecaParser(filename=target)
+    old_execution_time = time.time() - start
+    print("OLD Geomturbo reading execution time: ", old_execution_time)
+
+    print("Speedup: %.4f" % (old_execution_time / new_execution_time))
+
+    old_mb = old_parser.exportNpyArray(0, 0)
+    old_sp = old_parser.exportNpyArray(0, 1) if sp_active else None
+    old_diff = old_parser.exportNpyArray(1, 0) if diff_active else None
+
+    assert np.allclose(old_mb, parser.main_blade)
+    if sp_active:
+        assert np.allclose(old_sp, parser.splitter)
+    if diff_active:
+        assert np.allclose(old_diff, parser.diffuser)
