@@ -147,19 +147,19 @@ class GeomTurboParser(object):
         if self.splitter_active:
             splitter = ed(ArrayWithName.get_curve_by_name(extracted_blades, self.__splitter_blade_name).array)
         else:
-            splitter = np.empty(1)
+            splitter = None
 
         if self.diffuser_active:
             diffuser = ed(ArrayWithName.get_curve_by_name(extracted_blades, self.__diffuser_blade_name).array)
         else:
-            diffuser = np.empty(1)
+            diffuser = None
 
         mb_periodicity = ArrayWithName.get_curve_by_name(extracted_wheels, self.__impeller_wheel_name).array
 
         if self.diffuser_active:
             diff_periodicity = ArrayWithName.get_curve_by_name(extracted_wheels, self.__cascade_wheel_name).array
         else:
-            diff_periodicity = np.empty(1)
+            diff_periodicity = None
 
         return main_blade, splitter, diffuser, mb_periodicity, diff_periodicity
 
@@ -227,8 +227,8 @@ class GeomTurboParser(object):
 
 
 if __name__ == '__main__':
-    target = "tests/data/crio.geomTurbo"
-    diff_active = False
+    target = "tests/data/mgt.geomTurbo"
+    diff_active = True
     sp_active = True
 
     start = time.time()
