@@ -31,7 +31,7 @@ class GeomTurboParser(object):
     __main_blade_name = "Impeller_main"
     __splitter_blade_name = "Impeller_spl"
     __diffuser_blade_name = "Cascade_Diffuser_main"
-    __straight_lines_filling_points = 40
+    __straight_lines_filling_points = 30
 
     def __init__(self,
                  target_path: str,
@@ -181,21 +181,26 @@ class GeomTurboParser(object):
             extracted_curves.append(ArrayWithName(name=name, array=array))
 
         hub_composition = find_between(channel_text, "NI_BEGIN channel_curve hub", "NI_END channel_curve hub")[0]
-        hub_curves = [f"curve_{item}" for item in list(set([int(match.group(1)) for match in re.finditer(r"curve_(\d+)", hub_composition)]))]
+        hub_curves = [f"curve_{item}" for item in
+                      [int(match.group(1)) for match in re.finditer(r"curve_(\d+)", hub_composition)]]
+        seen = {}
+        hub_curves = [seen.setdefault(x, x) for x in hub_curves if x not in seen]
         hub_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, item).array for item in hub_curves]
         hub_arrays = self.__fill_straight_curves(hub_arrays)
         hub_array = np.concatenate(hub_arrays)
 
-        hub_array = np.unique(hub_array, axis=0)
+        hub_array, _ = np.unique(hub_array, axis=0, return_index=True)
 
         shroud_composition = find_between(channel_text, "NI_BEGIN channel_curve shroud", "NI_END channel_curve shroud")[0]
         shroud_curves = [f"curve_{item}" for item in
-                      list(set([int(match.group(1)) for match in re.finditer(r"curve_(\d+)", shroud_composition)]))]
+                       [int(match.group(1)) for match in re.finditer(r"curve_(\d+)", shroud_composition)] ]
+        seen = {}
+        shroud_curves = [seen.setdefault(x, x) for x in shroud_curves if x not in seen]
         shroud_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, item).array for item in shroud_curves]
         shroud_arrays = self.__fill_straight_curves(shroud_arrays)
         shroud_array = np.concatenate(shroud_arrays)
 
-        shroud_array = np.unique(shroud_array, axis=0)
+        shroud_array, _ = np.unique(shroud_array, axis=0, return_index=True)
 
         hub_array = np.concatenate([np.zeros(shape=(hub_array.shape[0], 1)),
                                     np.flip(hub_array, axis=-1),
@@ -249,6 +254,7 @@ if __name__ == '__main__':
     old_sp = old_parser.exportNpyArray(0, 1) if sp_active else None
     old_diff = old_parser.exportNpyArray(1, 0) if diff_active else None
     old_hub, old_shroud = old_parser.exportZRNpyArrays()
+
 
     assert np.allclose(old_mb, parser.main_blade)
     if sp_active:
