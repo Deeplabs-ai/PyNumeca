@@ -197,7 +197,17 @@ class GeomTurboParser(object):
 
         shroud_array = np.unique(shroud_array, axis=0)
 
-        return hub_array, shroud_array
+        hub_array = np.concatenate([np.zeros(shape=(hub_array.shape[0], 1)),
+                                    hub_array,
+                                    np.zeros(shape=(hub_array.shape[0], 1))],
+                                    axis=-1)
+
+        shroud_array = np.concatenate([np.zeros(shape=(shroud_array.shape[0], 1)),
+                                      shroud_array,
+                                      np.ones(shape=(shroud_array.shape[0], 1))],
+                                      axis=-1)
+
+        return np.expand_dims(hub_array, axis=0), np.expand_dims(shroud_array, axis=0)
 
     def __fill_straight_curves(self, curves_list) -> list:
         new_curves = []
