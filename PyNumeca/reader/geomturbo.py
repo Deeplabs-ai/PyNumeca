@@ -198,12 +198,12 @@ class GeomTurboParser(object):
         shroud_array = np.unique(shroud_array, axis=0)
 
         hub_array = np.concatenate([np.zeros(shape=(hub_array.shape[0], 1)),
-                                    hub_array,
+                                    np.flip(hub_array, axis=-1),
                                     np.zeros(shape=(hub_array.shape[0], 1))],
                                     axis=-1)
 
         shroud_array = np.concatenate([np.zeros(shape=(shroud_array.shape[0], 1)),
-                                      shroud_array,
+                                      np.flip(shroud_array, axis=-1),
                                       np.ones(shape=(shroud_array.shape[0], 1))],
                                       axis=-1)
 
@@ -248,6 +248,7 @@ if __name__ == '__main__':
     old_mb = old_parser.exportNpyArray(0, 0)
     old_sp = old_parser.exportNpyArray(0, 1) if sp_active else None
     old_diff = old_parser.exportNpyArray(1, 0) if diff_active else None
+    old_hub, old_shroud = old_parser.exportZRNpyArrays()
 
     assert np.allclose(old_mb, parser.main_blade)
     if sp_active:
