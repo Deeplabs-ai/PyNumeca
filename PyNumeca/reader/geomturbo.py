@@ -31,7 +31,7 @@ class GeomTurboParser(object):
     __main_blade_name = "Impeller_main"
     __splitter_blade_name = "Impeller_spl"
     __diffuser_blade_name = "Cascade_Diffuser_main"
-    __straight_lines_filling_points = 30
+    __straight_lines_filling_points = 50
 
     def __init__(self,
                  target_path: str,
@@ -189,7 +189,7 @@ class GeomTurboParser(object):
         hub_arrays = self.__fill_straight_curves(hub_arrays)
         hub_array = np.concatenate(hub_arrays)
 
-        hub_array, _ = np.unique(hub_array, axis=0, return_index=True)
+        # hub_array, _ = np.unique(hub_array, axis=0, return_index=True)
 
         shroud_composition = find_between(channel_text, "NI_BEGIN channel_curve shroud", "NI_END channel_curve shroud")[0]
         shroud_curves = [f"curve_{item}" for item in
@@ -200,7 +200,7 @@ class GeomTurboParser(object):
         shroud_arrays = self.__fill_straight_curves(shroud_arrays)
         shroud_array = np.concatenate(shroud_arrays)
 
-        shroud_array, _ = np.unique(shroud_array, axis=0, return_index=True)
+        # shroud_array, _ = np.unique(shroud_array, axis=0, return_index=True)
 
         hub_array = np.concatenate([np.zeros(shape=(hub_array.shape[0], 1)),
                                     np.flip(hub_array, axis=-1),
@@ -216,7 +216,7 @@ class GeomTurboParser(object):
 
     def __fill_straight_curves(self, curves_list) -> list:
         new_curves = []
-        for curve in curves_list:
+        for i, curve in enumerate(curves_list):
             if curve.shape[0] == 2:
                 ref = np.array([0, 1])
                 x = np.linspace(0,1,num=self.__straight_lines_filling_points)
@@ -226,6 +226,9 @@ class GeomTurboParser(object):
                 new_curve = np.concatenate([r, z], axis=1)
             else:
                 new_curve = curve
+
+            if i != len(curves_list) - 1:
+                new_curve = np.delete(new_curve, axis=0, obj=-1)
 
             new_curves.append(new_curve)
         return new_curves
@@ -255,6 +258,7 @@ if __name__ == '__main__':
     old_diff = old_parser.exportNpyArray(1, 0) if diff_active else None
     old_hub, old_shroud = old_parser.exportZRNpyArrays()
 
+    # parser.plot_channel(show=True)
 
     assert np.allclose(old_mb, parser.main_blade)
     if sp_active:
