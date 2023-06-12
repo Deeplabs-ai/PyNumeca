@@ -19,18 +19,18 @@ class ArrayWithName(object):
         self.array = array
 
     @staticmethod
-    def get_curve_by_name(my_list: List["ArrayWithName"], name: str):
+    def get_curve_by_name(my_list: List["ArrayWithName"], names: List):
         for item in my_list:
-            if item.name == name:
+            if item.name in names:
                 return item
 
 
 class GeomTurboParser(object):
-    __impeller_wheel_name = "Impeller_wheel"
-    __cascade_wheel_name = "Cascade_Diffuser_wheel"
-    __main_blade_name = "Impeller_main"
-    __splitter_blade_name = "Impeller_spl"
-    __diffuser_blade_name = "Cascade_Diffuser_main"
+    __impeller_wheel_name = ["Impeller_wheel", "Rotor_wheel"]
+    __cascade_wheel_name = ["Cascade_Diffuser_wheel", "Nozzle_wheel"]
+    __main_blade_name = ["Impeller_main", "Rotor_main"]
+    __splitter_blade_name = ["Impeller_spl"]
+    __diffuser_blade_name = ["Cascade_Diffuser_main", "Nozzle_main"]
     __straight_lines_filling_points = 50
 
     def __init__(self,
