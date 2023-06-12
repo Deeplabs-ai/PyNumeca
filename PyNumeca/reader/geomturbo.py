@@ -185,7 +185,7 @@ class GeomTurboParser(object):
                       [int(match.group(1)) for match in re.finditer(r"curve_(\d+)", hub_composition)]]
         seen = {}
         hub_curves = [seen.setdefault(x, x) for x in hub_curves if x not in seen]
-        hub_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, item).array for item in hub_curves]
+        hub_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, [item]).array for item in hub_curves]
         hub_arrays = self.__fill_straight_curves(hub_arrays)
         hub_array = np.concatenate(hub_arrays)
 
@@ -196,7 +196,7 @@ class GeomTurboParser(object):
                        [int(match.group(1)) for match in re.finditer(r"curve_(\d+)", shroud_composition)] ]
         seen = {}
         shroud_curves = [seen.setdefault(x, x) for x in shroud_curves if x not in seen]
-        shroud_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, item).array for item in shroud_curves]
+        shroud_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, [item]).array for item in shroud_curves]
         shroud_arrays = self.__fill_straight_curves(shroud_arrays)
         shroud_array = np.concatenate(shroud_arrays)
 
@@ -235,9 +235,9 @@ class GeomTurboParser(object):
 
 
 if __name__ == '__main__':
-    target = "tests/data/mgt.geomTurbo"
+    target = "tests/data/flow_000001.geomTurbo"
     diff_active = True
-    sp_active = True
+    sp_active = False
 
     start = time.time()
     parser = GeomTurboParser(target_path=target, diffuser_active=diff_active,
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     old_diff = old_parser.exportNpyArray(1, 0) if diff_active else None
     old_hub, old_shroud = old_parser.exportZRNpyArrays()
 
-    # parser.plot_channel(show=True)
+    parser.plot_channel(show=True)
 
     assert np.allclose(old_mb, parser.main_blade)
     if sp_active:
