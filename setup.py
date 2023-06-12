@@ -1,5 +1,5 @@
 from distutils.core import setup
-__version__ = 'v0.0.31'
+__version__ = 'v0.0.32'
 
 setup(
     name='PyNumeca',  # How you named your package folder (MyLib)
@@ -18,7 +18,7 @@ setup(
     author='Marco Sanguineti',  # Type in your name
     author_email='marco.sanguineti.info@gmail.com',  # Type in your E-Mail
     url='https://github.com/GitMarco27/PyNumeca.git',  # Provide either the link to your GitHub or to your website
-    download_url='https://github.com/GitMarco27/PyNumeca/archive/refs/tags/v0.0.31.zip',  # I explain this later on
+    download_url='https://github.com/GitMarco27/PyNumeca/archive/refs/tags/v0.0.32.zip',  # I explain this later on
     keywords=['PyNumeca', 'Numeca', 'Python'],  # Keywords that define your package best
     install_requires=[  # I get to this in a second
         'numpy',
