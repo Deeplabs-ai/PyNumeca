@@ -41,7 +41,7 @@ class CentrifugalCompressor(object):
 
         self.update_boundaries(m=mf_dict['Mass_flow'], pt_in=mf_dict['Pt_in'], tt_in=mf_dict['Tt_in'])
 
-    def load_geometry_from_geometurbo(self, path: str):
+    def load_geometry_from_geomturbo(self, path: str):
         if not os.path.isfile(path):
             raise FileNotFoundError(f'{path} not found')
 

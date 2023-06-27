@@ -9,7 +9,7 @@ def test_centrifugal_compressor():
     mf = 'data/example.mf'
 
     compressor = turbo.CentrifugalCompressor(fluid=FluidsList.Air)
-    compressor.load_geometry_from_geometurbo(geomturbo)
+    compressor.load_geometry_from_geomturbo(geomturbo)
     compressor.load_boundaries_and_performances_from_mf(mf)
 
     compressor.save('tmp.bin')
