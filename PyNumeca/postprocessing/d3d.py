@@ -1,5 +1,7 @@
 import os
 import shutil
+import tqdm
+
 
 def collect_design_3d_results(root_path: str, target_path: str, reset: bool = False):
 
@@ -25,7 +27,7 @@ def collect_design_3d_results(root_path: str, target_path: str, reset: bool = Fa
     if len(flow_files) == 0:
         return ValueError('No flow/design files found')
 
-    for file in flow_files:
+    for file in tqdm.tqdm(flow_files):
         mesh_path = os.path.join(file, "_mesh")
 
         for item in os.listdir(mesh_path):
