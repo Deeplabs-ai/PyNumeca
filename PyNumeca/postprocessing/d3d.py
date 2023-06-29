@@ -30,6 +30,9 @@ def collect_design_3d_results(root_path: str, target_path: str, reset: bool = Fa
     for file in tqdm.tqdm(flow_files):
         mesh_path = os.path.join(file, "_mesh")
 
+        if not os.path.exists(mesh_path):
+            continue
+
         for item in os.listdir(mesh_path):
             if "geomturbo" in item.lower():
                 geom_path = os.path.join(mesh_path, item)
