@@ -26,9 +26,9 @@ class ArrayWithName(object):
 
 
 class GeomTurboParser(object):
-    __impeller_wheel_name = ["Impeller_wheel", "Rotor_wheel"]
+    __impeller_wheel_name = ["Impeller_wheel", "Rotor_wheel", "row1", "impeller_wheel"]
     __cascade_wheel_name = ["Cascade_Diffuser_wheel", "Nozzle_wheel"]
-    __main_blade_name = ["Impeller_main", "Rotor_main"]
+    __main_blade_name = ["Impeller_main", "Rotor_main", "mainblade", "impeller_main"]
     __splitter_blade_name = ["Impeller_spl"]
     __diffuser_blade_name = ["Cascade_Diffuser_main", "Nozzle_main"]
     __straight_lines_filling_points = 50
@@ -88,19 +88,49 @@ class GeomTurboParser(object):
         return self.main_blade.shape, self.splitter.shape, self.diffuser.shape
 
     def get_blades(self) -> Tuple[np.ndarray, ...]:
+
+        self.raw_content = self.raw_content.replace("NIBLADEGEOMETRY", "nibladegeometry")
+
         blades_raw_content = find_between(self.raw_content,
                                           "NI_BEGIN NIBlade",
                                           "NI_END NIBlade")
+
+        if len(blades_raw_content) == 0:
+            blades_raw_content = find_between(self.raw_content,
+                                              "NI_BEGIN	NIBLADE",
+                                              "NI_END	NIBLADE")
+
+            if len(blades_raw_content) == 0:
+                raise ValueError('Cannot find any blade in geomTurbo file')
 
         wheels_raw_content = find_between(self.raw_content,
                                           "NI_BEGIN nirow",
                                           "NI_END nirow")
 
+        if len(wheels_raw_content) == 0:
+            wheels_raw_content = find_between(self.raw_content,
+                                              "NI_BEGIN	NIROW",
+                                              "NI_END	NIROW")
+
+            if len(wheels_raw_content) == 0:
+                raise ValueError('Cannot find any wheel in geomTurbo file')
+
         extracted_wheels = []
 
         for wheel in wheels_raw_content:
             name = find_between(wheel, "NAME", "TYPE")[0].replace(' ', '').replace("\n", "")
-            periodicity = int(find_between(wheel, "PERIODICITY", "ROTATION_SPEED")[0].replace(' ', '').replace("\n", ""))
+
+            name = name.replace("\t", "")
+
+            try:
+                periodicity = int(find_between(wheel, "PERIODICITY", "ROTATION_SPEED")[0].replace(' ', '').replace("\n", ""))
+            except:
+                try:
+                    periodicity = int(
+                        find_between(wheel, "PERIODICITY", "\n")[0].replace('\t', ''))
+                except Exception as e:
+                    print('cannot find row periodicity: ', e)
+
 
             extracted_wheels.append(ArrayWithName(name=name, array=periodicity))
 
@@ -109,9 +139,22 @@ class GeomTurboParser(object):
         for blade in blades_raw_content:
             name = find_between(blade, "NAME", "NI_BEGIN")[0].replace(' ', '').replace("\n", "")
 
+            if "\t" in name:
+                name = name.replace("\t", "")
+
             blade_geom = find_between(blade,
                                       "NI_BEGIN nibladegeometry",
-                                      "NI_END nibladegeometry")[0]
+                                      "NI_END nibladegeometry")
+
+            if len(blade_geom) == 0:
+                blade_geom = find_between(blade,
+                                          "NI_BEGIN\tnibladegeometry",
+                                          "NI_END\tnibladegeometry")
+
+                if len(blade_geom) == 0:
+                    raise ValueError("Cannot detect blade geometry")
+
+            blade_geom = blade_geom[0]
 
             def extract_coordinates(text):
                 lines = text.strip().split("\n")
@@ -165,24 +208,55 @@ class GeomTurboParser(object):
 
 
     def get_channel(self) -> Tuple[np.ndarray, ...]:
-        channel_text = find_between(self.raw_content, "NI_BEGIN CHANNEL", "NI_END CHANNEL")[0]
+        channel_text = find_between(self.raw_content, "NI_BEGIN CHANNEL", "NI_END CHANNEL")
+
+        if len(channel_text) == 0:
+            channel_text = find_between(self.raw_content, "NI_BEGIN\tCHANNEL", "NI_END\tCHANNEL")
+
+            if len(channel_text) == 0:
+                raise ValueError("Cannot find channel in geomTurbo file")
+
+        channel_text = channel_text[0]
 
         curves = find_between(channel_text, "NI_BEGIN basic_curve", "NI_END basic_curve")
+
+        if len(curves) == 0:
+            curves = find_between(channel_text, "NI_BEGIN\tbasic_curve", "NI_END\tbasic_curve")
 
         extracted_curves = []
 
         for curve in curves:
             name = find_between(curve, "NAME", "DISCRETISATION")[0].replace(' ', '').replace("\n", "")
+
+            if "\t" in name:
+                name = name.replace("\t", "")
             # Split the text into lines and remove the first line ("ZR")
-            lines = find_between(curve, "ZR", "NI_END zrcurve")[0].strip().split("\n")[1:]
+            try:
+                lines = find_between(curve, "ZR", "NI_END zrcurve")[0].strip().split("\n")[1:]
+            except:
+                lines = find_between(curve, "ZR", "NI_END\tzrcurve")[0].strip().split("\n")[1:]
 
             # Convert each line to a list of floats and stack them vertically to create a 2D numpy array
             array = np.vstack([np.fromstring(line, sep=" ") for line in lines])
             extracted_curves.append(ArrayWithName(name=name, array=array))
 
-        hub_composition = find_between(channel_text, "NI_BEGIN channel_curve hub", "NI_END channel_curve hub")[0]
+        hub_composition = find_between(channel_text, "NI_BEGIN channel_curve hub", "NI_END channel_curve hub")
+
+        if len(hub_composition) == 0:
+            hub_composition = find_between(channel_text, "NI_BEGIN\tchannel_curve hub", "NI_END\tchannel_curve hub")
+
+            if len(hub_composition) == 0:
+                raise ValueError('Cannot define hub curve composition')
+
+        hub_composition = hub_composition[0]
+
         hub_curves = [f"curve_{item}" for item in
                       [int(match.group(1)) for match in re.finditer(r"curve_(\d+)", hub_composition)]]
+
+        if len(hub_curves) == 0:
+            hub_curves = [f"hub_crv_{item}" for item in
+                         [int(match.group(1)) for match in re.finditer(r"hub_crv_(\d+)", hub_composition)]]
+
         seen = {}
         hub_curves = [seen.setdefault(x, x) for x in hub_curves if x not in seen]
         hub_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, [item]).array for item in hub_curves]
@@ -191,9 +265,23 @@ class GeomTurboParser(object):
 
         # hub_array, _ = np.unique(hub_array, axis=0, return_index=True)
 
-        shroud_composition = find_between(channel_text, "NI_BEGIN channel_curve shroud", "NI_END channel_curve shroud")[0]
+        shroud_composition = find_between(channel_text, "NI_BEGIN channel_curve shroud", "NI_END channel_curve shroud")
+
+        if len(shroud_composition) == 0:
+            shroud_composition = find_between(channel_text, "NI_BEGIN\tchannel_curve shroud", "NI_END\tchannel_curve shroud")
+
+            if len(shroud_composition) == 0:
+                raise ValueError('Cannot define hub curve composition')
+
+        shroud_composition = shroud_composition[0]
+
         shroud_curves = [f"curve_{item}" for item in
                        [int(match.group(1)) for match in re.finditer(r"curve_(\d+)", shroud_composition)] ]
+
+        if len(shroud_curves) == 0:
+            shroud_curves = [f"shroud_crv_{item}" for item in
+                         [int(match.group(1)) for match in re.finditer(r"shroud_crv_(\d+)", shroud_composition)]]
+
         seen = {}
         shroud_curves = [seen.setdefault(x, x) for x in shroud_curves if x not in seen]
         shroud_arrays = [ArrayWithName.get_curve_by_name(extracted_curves, [item]).array for item in shroud_curves]
@@ -235,8 +323,8 @@ class GeomTurboParser(object):
 
 
 if __name__ == '__main__':
-    target = "tests/data/flow_000001.geomTurbo"
-    diff_active = True
+    target = "./tests/data/rotor_db.geomTurbo"
+    diff_active = False
     sp_active = False
 
     start = time.time()
