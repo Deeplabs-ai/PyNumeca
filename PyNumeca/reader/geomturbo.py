@@ -29,8 +29,8 @@ class GeomTurboParser(object):
     __impeller_wheel_name = ["Impeller_wheel", "Rotor_wheel", "row1", "impeller_wheel"]
     __cascade_wheel_name = ["Cascade_Diffuser_wheel", "Nozzle_wheel"]
     __main_blade_name = ["Impeller_main", "Rotor_main", "mainblade", "impeller_main"]
-    __splitter_blade_name = ["Impeller_spl"]
-    __diffuser_blade_name = ["Cascade_Diffuser_main", "Nozzle_main"]
+    __splitter_blade_name = ["Impeller_spl", "splitter", "splitter1"]
+    __diffuser_blade_name = ["Cascade_Diffuser_main", "Nozzle_main", "diffuser", "diffuser1"]
     __straight_lines_filling_points = 50
 
     def __init__(self,
@@ -323,6 +323,7 @@ class GeomTurboParser(object):
 
 
 if __name__ == '__main__':
+    # target = "./tests/data/cc_autoblade.geomTurbo"
     target = "./tests/data/rotor_db.geomTurbo"
     diff_active = False
     sp_active = False
