@@ -28,7 +28,7 @@ class ArrayWithName(object):
 class GeomTurboParser(object):
     __impeller_wheel_name = ["Impeller_wheel", "Rotor_wheel", "row1", "impeller_wheel"]
     __cascade_wheel_name = ["Cascade_Diffuser_wheel", "Nozzle_wheel"]
-    __main_blade_name = ["Impeller_main", "Rotor_main", "mainblade", "impeller_main"]
+    __main_blade_name = ["Impeller_main", "Rotor_main", "mainblade", "impeller_main", "MainBlade"]
     __splitter_blade_name = ["Impeller_spl", "splitter", "splitter1"]
     __diffuser_blade_name = ["Cascade_Diffuser_main", "Nozzle_main", "diffuser", "diffuser1"]
     __straight_lines_filling_points = 50
