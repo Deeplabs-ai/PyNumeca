@@ -1,9 +1,8 @@
+import re
 from collections import OrderedDict
+from copy import copy, deepcopy
 
 import numpy as np
-import re
-
-from copy import copy, deepcopy
 
 from PyNumeca.reader.iecEntry import iecEntry
 from PyNumeca.reader.iecGroup import iecGroup

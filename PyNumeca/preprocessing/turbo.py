@@ -5,8 +5,8 @@ import numpy as np
 from pyfluids.fluids.fluid import Fluid, FluidsList
 
 from PyNumeca.postprocessing.mf import read_mf
-from PyNumeca.utils.boundaries import Boundaries
 from PyNumeca.reader.numecaParser import numecaParser
+from PyNumeca.utils.boundaries import Boundaries
 from PyNumeca.utils.geometric import car2cil
 from PyNumeca.utils.units import convert_rotational_speed
 

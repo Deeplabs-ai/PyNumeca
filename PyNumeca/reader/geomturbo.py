@@ -1,10 +1,12 @@
 from __future__ import annotations
-import plotly.graph_objects as go
+
 import os
 import re
 import time
 from typing import List, Tuple
+
 import numpy as np
+import plotly.graph_objects as go
 
 from PyNumeca.reader.numecaParser import numecaParser
 

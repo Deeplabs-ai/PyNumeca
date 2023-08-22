@@ -1,5 +1,5 @@
-import re
 import os
+import re
 
 
 def read_mf(mf_file: str) -> dict:

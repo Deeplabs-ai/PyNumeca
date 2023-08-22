@@ -3,8 +3,8 @@ import signal
 
 import numpy as np
 import pandas as pd
-from PyNumeca.constants import constants
 
+from PyNumeca.constants import constants
 from PyNumeca.fine import fine
 from PyNumeca.igg import igg
 from PyNumeca.postprocessing import mf

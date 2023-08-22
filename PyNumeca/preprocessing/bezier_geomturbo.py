@@ -1,11 +1,14 @@
 from __future__ import annotations
-import numpy as np
-from PyNumeca.preprocessing.bezier3d import get_bezier_parameters, bezier_curve
-import plotly.graph_objects as go
-from PyNumeca.reader.numecaParser import numecaParser
-from typing import List
+
 import os
+from typing import List
+
 import joblib
+import numpy as np
+import plotly.graph_objects as go
+
+from PyNumeca.preprocessing.bezier3d import bezier_curve, get_bezier_parameters
+from PyNumeca.reader.numecaParser import numecaParser
 from PyNumeca.utils.geometric import fitting_metrics
 
 
