@@ -1,18 +1,23 @@
+"""
+Test the preprocessing module.
+"""
+
 import os
 
+from pyfluids import FluidsList  # type: ignore
+
 from PyNumeca.preprocessing import turbo
-from pyfluids import FluidsList
 
 
 def test_centrifugal_compressor():
-    geomturbo = 'data/C2_rev4.geomTurbo'
-    mf = 'data/example.mf'
+    """Test centrifugal compressor loading and saving"""
+    geomturbo = "tests/data/C2_rev4.geomTurbo"
+    performance = "tests/data/example.mf"
 
     compressor = turbo.CentrifugalCompressor(fluid=FluidsList.Air)
     compressor.load_geometry_from_geomturbo(geomturbo)
-    compressor.load_boundaries_and_performances_from_mf(mf)
+    compressor.load_boundaries_and_performances_from_mf(performance)
 
-    compressor.save('tmp.bin')
-    new_compressor = turbo.CentrifugalCompressor.load('tmp.bin')
-    os.remove('tmp.bin')
-
+    compressor.save("tmp.bin")
+    turbo.CentrifugalCompressor.load("tmp.bin")
+    os.remove("tmp.bin")

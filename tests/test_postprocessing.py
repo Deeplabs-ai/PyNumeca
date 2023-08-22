@@ -1,8 +1,15 @@
-from PyNumeca.postprocessing import plan, mf
+"""
+Test Postprocessing
+"""
+
+from PyNumeca.postprocessing import mf, plan
 
 
 def test_reading_plan():
-    plan.plan_to_dataframe('data/FINAL_DOE_400_shuffled.plan', log_head=True)
+    """Test reading a plan file"""
+    plan.plan_to_dataframe("tests/data/FINAL_DOE_400_shuffled.plan", log_head=True)
+
 
 def test_reading_mf():
-    mf.read_mf('data/example.mf')
+    """Test reading a mf file"""
+    mf.read_mf("tests/data/example.mf")

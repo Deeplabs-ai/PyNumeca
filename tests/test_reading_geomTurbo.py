@@ -1,34 +1,37 @@
+"""Test reading a geomturbo file
+"""
+
 import logging
 import os
-
-import numpy as np
 
 from PyNumeca.reader.numecaParser import numecaParser
 
 
 def test_reading_geomturbo():
+    """Test reading a geomturbo file"""
     test = []
     test.append(numecaParser())
     test.append(numecaParser())
     test.append(numecaParser())
     test.append(numecaParser())
-    test[0].load("data/C2_rev4.geomTurbo")
-    test[1].load("data/Rotor37_Autoblade.geomTurbo")
-    test[2].load("data/template_rotor_g_v4.geomTurbo")
-    test[3].load("data/C2_Mappe_DB_51_r2_final.geomTurbo")
+    test[0].load("tests/data/C2_rev4.geomTurbo")
+    test[1].load("tests/data/Rotor37_Autoblade.geomTurbo")
+    test[2].load("tests/data/template_rotor_g_v4.geomTurbo")
+    test[3].load("tests/data/C2_Mappe_DB_51_r2_final.geomTurbo")
 
     for i, item in enumerate(test):
         # Test row periodicity reading and writing
-        bladeCount = item.get_row_periodicity(0)
-        print("Before = ", bladeCount)
-        item.set_row_periodicity(int(bladeCount) + 2, 0)
-        bladeCount = item.get_row_periodicity(0)
-        print("After = ", bladeCount)
+        blade_count = item.get_row_periodicity(0)
+        print("Before = ", blade_count)
+        item.set_row_periodicity(int(blade_count) + 2, 0)
+        blade_count = item.get_row_periodicity(0)
+        print("After = ", blade_count)
 
         # Test row speed reading and writing
         bladespeed = item.get_row_speed(0)
         print("Before = ", bladespeed)
-        if (bladespeed == "NaN"): bladespeed = 1234
+        if bladespeed == "NaN":
+            bladespeed = 1234
         item.set_row_speed(float(bladespeed) + 1000, 0)
         bladespeed = item.get_row_speed(0)
         print("After = ", bladespeed)
@@ -59,10 +62,9 @@ def test_reading_geomturbo():
         item.importZRNpyArray2(out_hub_list)
         item.importZRNpyArray2(out_shroud_list)
 
-        with open(f"test_file_{i}.txt", "w") as f:
-            f.write(item.outputString())
+        with open(f"test_file_{i}.txt", "w", encoding="utf-8") as output_file:
+            output_file.write(item.outputString())
 
     for file in os.listdir():
-        if 'test_file' in file:
+        if "test_file" in file:
             os.remove(file)
-            pass
