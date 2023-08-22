@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "pynumeca"
+version = "0.0.35"
+description = "Python interface to Numera family software"
+authors = ["GitMarco27 <marco.sanguineti.info@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11, <3.12"
+numpy = "^1.25.2"
+plotly = "^5.16.1"
+pandas = "^2.0.3"
+scipy = "^1.11.2"
+joblib = "^1.3.2"
+pyfluids = "^2.5.0"
+tqdm = "^4.66.1"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.5.1"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+black = "^23.7.0"
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
