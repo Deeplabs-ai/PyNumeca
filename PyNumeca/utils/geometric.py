@@ -36,7 +36,7 @@ def euclidean_distance(point, points_array):
     # calculate the difference between the point and each point in the array
     diff = points_array - point
     # square the difference
-    sq_diff = diff ** 2
+    sq_diff = diff**2
     # sum the squared difference along each axis
     sum_sq_diff = sq_diff.sum(axis=1)
     # take the square root of the sum
@@ -64,10 +64,10 @@ def fitting_metrics(original_curve, fitted_curve):
     distances = np.array(distances)
 
     metrics = {}
-    metrics['mean'] = distances.mean()
-    metrics['std'] = distances.std()
-    metrics['max'] = distances.max()
-    metrics['min'] = distances.min()
-    metrics['max_index'] = distances.argmax()
+    metrics["mean"] = distances.mean()
+    metrics["std"] = distances.std()
+    metrics["max"] = distances.max()
+    metrics["min"] = distances.min()
+    metrics["max_index"] = distances.argmax()
 
     return metrics

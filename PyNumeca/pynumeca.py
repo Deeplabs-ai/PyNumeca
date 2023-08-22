@@ -11,17 +11,28 @@ from PyNumeca.postprocessing import mf
 
 
 class Simulation(object):
-    __res_cols = ['Iteration number', 'Work unit', 'CPU time', 'Lift', 'Drag', 'Torque',
-                  'Qmax', 'Tmax', 'Mass flow in', 'Mass flow out']
+    __res_cols = [
+        "Iteration number",
+        "Work unit",
+        "CPU time",
+        "Lift",
+        "Drag",
+        "Torque",
+        "Qmax",
+        "Tmax",
+        "Mass flow in",
+        "Mass flow out",
+    ]
 
-    def __init__(self,
-                 name: str = 'Simulation',
-                 working_path: str = None,
-                 geomturbo_path: str = None,
-                 iec_path: str = None,
-                 trb_path: str = None,
-                 version: str = None):
-
+    def __init__(
+        self,
+        name: str = "Simulation",
+        working_path: str = None,
+        geomturbo_path: str = None,
+        iec_path: str = None,
+        trb_path: str = None,
+        version: str = None,
+    ):
         if working_path is not None:
             self.working_path = working_path
         if geomturbo_path is not None:
@@ -45,27 +56,37 @@ class Simulation(object):
             self.trb_path,
             self.geomturbo_path,
             # new_trb,
-            os.path.join(self.working_path, self.name, self.name + '.igg'),
-            igg_version=self.version)
+            os.path.join(self.working_path, self.name, self.name + ".igg"),
+            igg_version=self.version,
+        )
 
     def generate_run(self, index: int = 0):
-        fine.fine_run_from_mesh(self.iec_path,
-                                os.path.join(self.working_path, self.name, self.name + '.igg'),
-                                os.path.join(self.working_path, self.name, self.name + '.iec'),
-                                index=index,
-                                fine_version=self.version)
+        fine.fine_run_from_mesh(
+            self.iec_path,
+            os.path.join(self.working_path, self.name, self.name + ".igg"),
+            os.path.join(self.working_path, self.name, self.name + ".iec"),
+            index=index,
+            fine_version=self.version,
+        )
 
     @staticmethod
-    def setup_parallel_computation(run_file_path: str, cores: int = 20, version: str = constants.version):
-        fine.setup_parallel_computation(run_file_path, cores=cores, fine_version=version)
+    def setup_parallel_computation(
+        run_file_path: str, cores: int = 20, version: str = constants.version
+    ):
+        fine.setup_parallel_computation(
+            run_file_path, cores=cores, fine_version=version
+        )
 
-    def run_pipeline(self, cores: int = 20, index: int = 0, use_intel_mpi: bool = False):
+    def run_pipeline(
+        self, cores: int = 20, index: int = 0, use_intel_mpi: bool = False
+    ):
         self.make_mesh()
         self.generate_run(index)
-        all_subdirs = [os.path.join(self.working_path, self.name, d) for d in
-                       os.listdir(os.path.join(self.working_path,
-                                               self.name)) if
-                       os.path.isdir(os.path.join(self.working_path, self.name, d))]
+        all_subdirs = [
+            os.path.join(self.working_path, self.name, d)
+            for d in os.listdir(os.path.join(self.working_path, self.name))
+            if os.path.isdir(os.path.join(self.working_path, self.name, d))
+        ]
         all_runfiles = []
         for d in all_subdirs:
             for f in os.listdir(d):
@@ -74,36 +95,46 @@ class Simulation(object):
 
         # print(all_runfiles)
         self.runfile = str(max(all_runfiles, key=os.path.getmtime))
-        self.resfile = os.path.splitext(self.runfile)[0] + '.res'
-        print('Latest run file:', self.runfile)
+        self.resfile = os.path.splitext(self.runfile)[0] + ".res"
+        print("Latest run file:", self.runfile)
         self.setup_parallel_computation(self.runfile, cores, version=self.version)
 
         run_file_dir = os.path.split(self.runfile)[0]
         run_file_base_name = os.path.splitext(os.path.split(self.runfile)[1])[0]
-        batch_file = os.path.join(run_file_dir, run_file_base_name + '.batch')
+        batch_file = os.path.join(run_file_dir, run_file_base_name + ".batch")
 
         self.run_parallel_computation(batch_file, use_intel_mpi)
 
     def read_resfile(self):
-        with open(self.resfile, 'r') as f:
+        with open(self.resfile, "r") as f:
             res_content = f.readlines()
         extract = []
         index_ = 0
         for line in res_content:
-            if f' {index_} ' in line:
+            if f" {index_} " in line:
                 extract.append(
-                    np.array([item for item in line.replace('\n', '').split(' ') if item != ''], dtype=np.float32))
+                    np.array(
+                        [
+                            item
+                            for item in line.replace("\n", "").split(" ")
+                            if item != ""
+                        ],
+                        dtype=np.float32,
+                    )
+                )
                 index_ += 1
         dataframe = pd.DataFrame(extract, columns=self.__res_cols)
         return dataframe
 
     def read_mf(self):
         if self.runfile is not None:
-            mf_path = os.path.splitext(self.runfile)[0] + '.mf'
+            mf_path = os.path.splitext(self.runfile)[0] + ".mf"
             return mf.read_mf(mf_file=mf_path)
 
     def run_parallel_computation(self, batch_path: str, use_intel_mpi: bool = False):
-        self.runpid = fine.run_parallel_computation(batch_path, use_intel_mpi=use_intel_mpi)
+        self.runpid = fine.run_parallel_computation(
+            batch_path, use_intel_mpi=use_intel_mpi
+        )
 
     def kill_parallel_computation(self):
         if self.runpid is not None:
@@ -123,12 +154,12 @@ class Simulation(object):
                 index = 0
                 while True:
                     index += 1
-                    new_title = value + f'_{index}'
+                    new_title = value + f"_{index}"
                     if new_title not in existing_titles:
                         break
                 self._name = new_title
 
-            print('Working directory: ', os.path.join(self.working_path, self._name))
+            print("Working directory: ", os.path.join(self.working_path, self._name))
             os.mkdir(os.path.join(self.working_path, self._name))
 
     @property

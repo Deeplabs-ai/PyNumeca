@@ -35,67 +35,77 @@ class CentrifugalCompressor(object):
 
     def load_boundaries_and_performances_from_mf(self, mf_path):
         mf_dict = read_mf(mf_path)
-        self.rotating_speed = convert_rotational_speed(mf_dict['Omega'], to_rpm=False)
-        self.total_to_total_isentropic_efficiency = mf_dict['Eta_tt']
-        self.total_to_total_pressure_ratio = mf_dict['Beta_tt']
+        self.rotating_speed = convert_rotational_speed(mf_dict["Omega"], to_rpm=False)
+        self.total_to_total_isentropic_efficiency = mf_dict["Eta_tt"]
+        self.total_to_total_pressure_ratio = mf_dict["Beta_tt"]
 
-        self.update_boundaries(m=mf_dict['Mass_flow'], pt_in=mf_dict['Pt_in'], tt_in=mf_dict['Tt_in'])
+        self.update_boundaries(
+            m=mf_dict["Mass_flow"], pt_in=mf_dict["Pt_in"], tt_in=mf_dict["Tt_in"]
+        )
 
     def load_geometry_from_geomturbo(self, path: str):
         if not os.path.isfile(path):
-            raise FileNotFoundError(f'{path} not found')
+            raise FileNotFoundError(f"{path} not found")
 
         parser = numecaParser()
         parser.load(filename=path)
 
         try:
-            self.impeller = Blade(geometry=parser.exportNpyArray(0, 0)[0],
-                                  periodicity=parser.get_row_periodicity(rowNumber=0))
+            self.impeller = Blade(
+                geometry=parser.exportNpyArray(0, 0)[0],
+                periodicity=parser.get_row_periodicity(rowNumber=0),
+            )
             self.external_diameter = find_external_diameter(self.impeller.geometry)
 
         except Exception as e:
-            self.print('Cannot load impeller blade: ', e)
+            self.print("Cannot load impeller blade: ", e)
 
         try:
-            self.splitter = Blade(geometry=parser.exportNpyArray(0, 1)[0],
-                                  periodicity=parser.get_row_periodicity(rowNumber=0))
+            self.splitter = Blade(
+                geometry=parser.exportNpyArray(0, 1)[0],
+                periodicity=parser.get_row_periodicity(rowNumber=0),
+            )
         except Exception as e:
-            self.print('Cannot load splitter blade: ', e)
+            self.print("Cannot load splitter blade: ", e)
 
         try:
-            self.diffuser = Blade(geometry=parser.exportNpyArray(1, 0)[0],
-                                  periodicity=parser.get_row_periodicity(rowNumber=1))
+            self.diffuser = Blade(
+                geometry=parser.exportNpyArray(1, 0)[0],
+                periodicity=parser.get_row_periodicity(rowNumber=1),
+            )
         except Exception as e:
-            self.print('Cannot load diffuser blade: ', e)
+            self.print("Cannot load diffuser blade: ", e)
 
         try:
             hub, shroud = parser.exportZRNpyArraysList()
             self.channel = Channel(hub=hub, shroud=shroud)
         except Exception as e:
-            self.print('Cannot load channel: ', e)
+            self.print("Cannot load channel: ", e)
 
     def print(self, *args, **kwargs):
         print(*args, **kwargs) if self.verbosity else None
 
     def save(self, path: str):
         _, file_extension = os.path.splitext(path)
-        if file_extension != '.bin':
-            path += '.bin'
+        if file_extension != ".bin":
+            path += ".bin"
 
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             joblib.dump(self, f)
 
-        print(f'{self.__class__.__name__} saved to {path}')
+        print(f"{self.__class__.__name__} saved to {path}")
 
     @staticmethod
     def load(path: str):
         if not os.path.exists(path):
-            raise ValueError(f'{path} does not exist')
+            raise ValueError(f"{path} does not exist")
         return joblib.load(path)
 
 
 class Blade(object):
-    def __init__(self, geometry: np.ndarray, periodicity: int, is_te_blunt: bool = True):
+    def __init__(
+        self, geometry: np.ndarray, periodicity: int, is_te_blunt: bool = True
+    ):
         self.geometry = geometry  # (2, S, N, 4)
         self.is_te_blunt = is_te_blunt
         self.periodicity = periodicity

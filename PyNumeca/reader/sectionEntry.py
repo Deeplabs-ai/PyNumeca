@@ -1,5 +1,7 @@
 from PyNumeca.reader.iecEntry import iecEntry
 import numpy as np
+
+
 class sectionEntry(iecEntry):
     def __init__(self, *args):
         super(sectionEntry, self).__init__()
@@ -29,15 +31,20 @@ class sectionEntry(iecEntry):
         outputString += self.referenceFrame.outputString()
         outputString += self.numberOfPointsEntry.outputString()
         for i in range(self.numberOfPointsInt):
-            outputString += self.leadingSpaceString + str(self.X[i]) + \
-                            self.X2YSpaceString + str(self.Y[i]) + \
-                            self.Y2ZSpaceString + str(self.Z[i]) + \
-                            self.trailingSpaceString
+            outputString += (
+                self.leadingSpaceString
+                + str(self.X[i])
+                + self.X2YSpaceString
+                + str(self.Y[i])
+                + self.Y2ZSpaceString
+                + str(self.Z[i])
+                + self.trailingSpaceString
+            )
         return outputString
 
     def updateArrays(self, newX, newY, newZ):
-        if (len(newX) != len(newY) or len(newY) != len(newZ)):
-            print ("ERRORE")
+        if len(newX) != len(newY) or len(newY) != len(newZ):
+            print("ERRORE")
             exit()
         self.numberOfPointsInt = len(newX)
         self.numberOfPointsEntry.key = str(self.numberOfPointsInt)
@@ -46,8 +53,8 @@ class sectionEntry(iecEntry):
         self.Z = newZ
 
     def updateArraysCyl(self, newR, newTHETA, newZ):
-        if (len(newR) != len(newTHETA) or len(newTHETA) != len(newZ)):
-            print ("ERRORE")
+        if len(newR) != len(newTHETA) or len(newTHETA) != len(newZ):
+            print("ERRORE")
             exit()
         self.numberOfPointsInt = len(newR)
         self.numberOfPointsEntry.key = str(self.numberOfPointsInt)
@@ -57,8 +64,3 @@ class sectionEntry(iecEntry):
         for index in range(len(newR)):
             self.X[index] = self.R[index] * np.cos(self.THETA[index])
             self.Y[index] = self.R[index] * np.sin(self.THETA[index])
-
-
-
-
-
