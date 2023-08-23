@@ -1,0 +1,7 @@
+numpy
+plotly
+pandas
+scipy
+joblib
+pyfluids
+tqdm
