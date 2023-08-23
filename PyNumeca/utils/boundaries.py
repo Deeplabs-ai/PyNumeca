@@ -1,7 +1,8 @@
+from typing import Optional
+
 import numpy as np
 import pyfluids
 from pyfluids import Fluid, FluidsList, Input
-from typing import Optional
 
 
 class Boundaries(object):

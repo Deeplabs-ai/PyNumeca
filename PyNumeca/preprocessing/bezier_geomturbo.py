@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 import joblib
 import numpy as np
@@ -271,7 +271,9 @@ class BezierBlade(object):
         else:
             raise TypeError(f"number must be an integer. number type is {type(number)}")
 
-    def __fit_section_with_bezier(self, section: Optional[np.ndarray] = None) -> np.ndarray:
+    def __fit_section_with_bezier(
+        self, section: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         # section (S, n, f)
 
         assert (
