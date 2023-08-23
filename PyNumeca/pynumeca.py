@@ -8,6 +8,7 @@ from PyNumeca.constants import constants
 from PyNumeca.fine import fine
 from PyNumeca.igg import igg
 from PyNumeca.postprocessing import mf
+from typing import Optional
 
 
 class Simulation(object):
@@ -27,11 +28,11 @@ class Simulation(object):
     def __init__(
         self,
         name: str = "Simulation",
-        working_path: str = None,
-        geomturbo_path: str = None,
-        iec_path: str = None,
-        trb_path: str = None,
-        version: str = None,
+        working_path: Optional[str] = None,
+        geomturbo_path: Optional[str] = None,
+        iec_path: Optional[str] = None,
+        trb_path: Optional[str] = None,
+        version: Optional[str] = None,
     ):
         if working_path is not None:
             self.working_path = working_path

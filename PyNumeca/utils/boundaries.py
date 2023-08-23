@@ -1,6 +1,7 @@
 import numpy as np
 import pyfluids
 from pyfluids import Fluid, FluidsList, Input
+from typing import Optional
 
 
 class Boundaries(object):
@@ -16,10 +17,10 @@ class Boundaries(object):
         m: float,
         pt_in: float,
         tt_in: float,
-        cp: float = None,
-        mu: float = None,
-        R: float = None,
-        fluid: pyfluids.fluids.fluid.FluidsList = None,
+        cp: Optional[float] = None,
+        mu: Optional[float] = None,
+        R: Optional[float] = None,
+        fluid: Optional[pyfluids.fluids.fluid.FluidsList] = None,
     ):
         """
         Initialize the boundaries of a turbomachine.

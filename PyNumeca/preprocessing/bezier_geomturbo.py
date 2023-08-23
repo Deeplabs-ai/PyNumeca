@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List
+from typing import Optional, List
 
 import joblib
 import numpy as np
@@ -15,10 +15,10 @@ from PyNumeca.utils.geometric import fitting_metrics
 class BezierChannel(object):
     def __init__(
         self,
-        hub: list = None,
-        shroud: list = None,
-        control_points_hub: np.ndarray = None,
-        control_points_shroud: np.ndarray = None,
+        hub: Optional[list] = None,
+        shroud: Optional[list] = None,
+        control_points_hub: Optional[np.ndarray] = None,
+        control_points_shroud: Optional[np.ndarray] = None,
         degree: int = 6,
         evaluation_points: int = 30,
         record_metrics: bool = False,
@@ -189,8 +189,8 @@ class BezierBlade(object):
 
     def __init__(
         self,
-        numpy_blade: np.ndarray = None,
-        control_points: np.ndarray = None,
+        numpy_blade: Optional[np.ndarray] = None,
+        control_points: Optional[np.ndarray] = None,
         bezier_degree: int | list = 6,
         evaluation_points: int | list = 100,
         is_blunt_te: bool = True,
@@ -271,7 +271,7 @@ class BezierBlade(object):
         else:
             raise TypeError(f"number must be an integer. number type is {type(number)}")
 
-    def __fit_section_with_bezier(self, section: np.ndarray = None) -> np.ndarray:
+    def __fit_section_with_bezier(self, section: Optional[np.ndarray] = None) -> np.ndarray:
         # section (S, n, f)
 
         assert (
