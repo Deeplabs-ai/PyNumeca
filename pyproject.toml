@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pynumeca"
-version = "0.0.36"
+version = "0.0.42"
 description = "Python interface to Numera family software"
 authors = ["GitMarco27 <marco.sanguineti.info@gmail.com>"]
 license = "MIT"
