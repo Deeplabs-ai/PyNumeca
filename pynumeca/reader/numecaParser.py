@@ -4,10 +4,10 @@ from copy import copy, deepcopy
 
 import numpy as np
 
-from PyNumeca.reader.iecEntry import iecEntry
-from PyNumeca.reader.iecGroup import iecGroup
-from PyNumeca.reader.niBladeGeometryEntry import niBladeGeometryEntry
-from PyNumeca.reader.zrCurveEntry import zrCurveEntry
+from pynumeca.reader.iecEntry import iecEntry
+from pynumeca.reader.iecGroup import iecGroup
+from pynumeca.reader.niBladeGeometryEntry import niBladeGeometryEntry
+from pynumeca.reader.zrCurveEntry import zrCurveEntry
 
 
 class numecaParser(OrderedDict):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from PyNumeca.reader.iecEntry import iecEntry
+from pynumeca.reader.iecEntry import iecEntry
 
 
 class sectionEntry(iecEntry):

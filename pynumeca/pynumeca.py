@@ -5,10 +5,10 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from PyNumeca.constants import constants
-from PyNumeca.fine import fine
-from PyNumeca.igg import igg
-from PyNumeca.postprocessing import mf
+from pynumeca.constants import constants
+from pynumeca.fine import fine
+from pynumeca.igg import igg
+from pynumeca.postprocessing import mf
 
 
 class Simulation(object):

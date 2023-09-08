@@ -2,7 +2,7 @@
 Test Postprocessing
 """
 
-from PyNumeca.postprocessing import mf, plan
+from pynumeca.postprocessing import mf, plan
 
 
 def test_reading_plan():

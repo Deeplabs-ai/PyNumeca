@@ -7,9 +7,9 @@ import joblib
 import numpy as np
 import plotly.graph_objects as go
 
-from PyNumeca.preprocessing.bezier3d import bezier_curve, get_bezier_parameters
-from PyNumeca.reader.numecaParser import numecaParser
-from PyNumeca.utils.geometric import fitting_metrics
+from pynumeca.preprocessing.bezier3d import bezier_curve, get_bezier_parameters
+from pynumeca.reader.numecaParser import numecaParser
+from pynumeca.utils.geometric import fitting_metrics
 
 
 class BezierChannel(object):

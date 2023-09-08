@@ -8,7 +8,7 @@ from typing import List, Tuple
 import numpy as np
 import plotly.graph_objects as go
 
-from PyNumeca.reader.numecaParser import numecaParser
+from pynumeca.reader.numecaParser import numecaParser
 
 
 def find_between(text: str, start_keyword: str, end_keyword: str) -> list:
@@ -29,7 +29,7 @@ class ArrayWithName(object):
 
 class GeomTurboParser(object):
     __impeller_wheel_name = ["Impeller_wheel", "Rotor_wheel", "row1", "impeller_wheel"]
-    __cascade_wheel_name = ["Cascade_Diffuser_wheel", "Nozzle_wheel"]
+    __cascade_wheel_name = ["Cascade_Diffuser_wheel", "Nozzle_wheel", "diffuser_wheel"]
     __main_blade_name = [
         "Impeller_main",
         "Rotor_main",
@@ -37,9 +37,16 @@ class GeomTurboParser(object):
         "impeller_main",
         "MainBlade",
     ]
-    __splitter_blade_name = ["Impeller_spl", "splitter", "splitter1"]
+    __splitter_blade_name = [
+        "Impeller_spl",
+        "splitter",
+        "splitter1",
+        "impeller_sp",
+        "impeller_spl",
+    ]
     __diffuser_blade_name = [
         "Cascade_Diffuser_main",
+        "diffuser_main",
         "Nozzle_main",
         "diffuser",
         "diffuser1",

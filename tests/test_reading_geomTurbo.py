@@ -4,7 +4,7 @@
 import logging
 import os
 
-from PyNumeca.reader.numecaParser import numecaParser
+from pynumeca.reader.numecaParser import numecaParser
 
 
 def test_reading_geomturbo():

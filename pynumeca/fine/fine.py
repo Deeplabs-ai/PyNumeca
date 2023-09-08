@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 
-from PyNumeca.constants import constants
+from pynumeca.constants import constants
 
 
 def fine_run_from_mesh(

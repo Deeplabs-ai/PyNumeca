@@ -5,7 +5,7 @@ Test the utils module.
 import numpy as np
 from pyfluids import FluidsList  # type: ignore
 
-from PyNumeca.utils import boundaries
+from pynumeca.utils import boundaries
 
 
 def test_boundaries():

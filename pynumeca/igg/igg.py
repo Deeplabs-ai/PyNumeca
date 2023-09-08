@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from PyNumeca.constants import constants
+from pynumeca.constants import constants
 
 
 def a5_mesh_from_geomturbo(

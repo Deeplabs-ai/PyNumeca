@@ -1,4 +1,4 @@
-from PyNumeca.reader import (
+from pynumeca.reader import (
     iecEntry,
     iecGroup,
     niBladeGeometryEntry,

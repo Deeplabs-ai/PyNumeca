@@ -1,6 +1,6 @@
 import re
 
-from PyNumeca.reader.numecaEntry import numecaEntry
+from pynumeca.reader.numecaEntry import numecaEntry
 
 
 class iecEntry(numecaEntry):

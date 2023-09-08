@@ -1,4 +1,4 @@
-from PyNumeca.reader.iecGroup import iecGroup
+from pynumeca.reader.iecGroup import iecGroup
 
 
 class zrCurveEntry(iecGroup):

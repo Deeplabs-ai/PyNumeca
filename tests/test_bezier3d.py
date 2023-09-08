@@ -4,7 +4,7 @@ Test Bezier3D compressor
 
 import os
 
-from PyNumeca.preprocessing.bezier_geomturbo import BezierCompressor
+from pynumeca.preprocessing.bezier_geomturbo import BezierCompressor
 
 
 def test_bezier3d_compressor():

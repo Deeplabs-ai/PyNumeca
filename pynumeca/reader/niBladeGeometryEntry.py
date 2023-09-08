@@ -1,7 +1,7 @@
 import copy
 
-from PyNumeca.reader.iecGroup import iecGroup
-from PyNumeca.reader.sectionEntry import sectionEntry
+from pynumeca.reader.iecGroup import iecGroup
+from pynumeca.reader.sectionEntry import sectionEntry
 
 
 class niBladeGeometryEntry(iecGroup):

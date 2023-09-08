@@ -6,7 +6,7 @@ import os
 
 from pyfluids import FluidsList  # type: ignore
 
-from PyNumeca.preprocessing import turbo
+from pynumeca.preprocessing import turbo
 
 
 def test_centrifugal_compressor():
