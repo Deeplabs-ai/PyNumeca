@@ -1,3 +1,3 @@
-from PyNumeca.igg import igg, utils
+from pynumeca.igg import igg, utils
 
 __all__ = ["igg", "utils"]

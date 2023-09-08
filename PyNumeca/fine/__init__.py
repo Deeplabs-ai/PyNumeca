@@ -1,3 +1,3 @@
-from PyNumeca.fine import fine, utils
+from pynumeca.fine import fine, utils
 
 __all__ = ["fine", "utils"]

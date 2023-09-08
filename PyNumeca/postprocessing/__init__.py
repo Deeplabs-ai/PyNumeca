@@ -1,3 +1,3 @@
-from PyNumeca.postprocessing import mf, plan
+from pynumeca.postprocessing import mf, plan
 
 __all__ = ["mf", "plan"]

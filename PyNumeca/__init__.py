@@ -1,9 +1,9 @@
-from PyNumeca.fine import fine
-from PyNumeca.igg import igg
-from PyNumeca.postprocessing import d3d, mf, plan, res
-from PyNumeca.preprocessing import bezier3d, bezier_geomturbo, turbo
-from PyNumeca.reader import geomturbo, numecaParser
-from PyNumeca.utils import boundaries, geometric, units
+from pynumeca.fine import fine
+from pynumeca.igg import igg
+from pynumeca.postprocessing import d3d, mf, plan, res
+from pynumeca.preprocessing import bezier3d, bezier_geomturbo, turbo
+from pynumeca.reader import geomturbo, numecaParser
+from pynumeca.utils import boundaries, geometric, units
 
 __all__ = [
     "fine",
