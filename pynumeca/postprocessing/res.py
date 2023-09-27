@@ -19,8 +19,12 @@ def read_resfile(path: str):
     with open(path, "r") as f:
         res_content = f.readlines()
     extract = []
-    index_ = 0
+    index_ = None
     for line in res_content:
+        if f" 0 " in line:
+            index_ = 0
+        elif f" 1 " in line:
+            index_ = 1
         if f" {index_} " in line:
             extract.append(
                 np.array(
