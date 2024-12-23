@@ -768,16 +768,17 @@ class numecaParser(OrderedDict):
             zeros_or_ones = np.zeros
         else:
             raise Exception("ERROR ZERO ONE HUB SHROUD")
-
         curve_array_list = []
         avoid_first_occurrence = True
-        for key, item in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][
-            channel_curve_name
-        ].items():
-            if "VERTEX" in key:
-                if not avoid_first_occurrence:
-                    curve_name = item.value[0]
-                    curve = basic_curve_dict[curve_name][1]
+        for key, item in self["ROOT"]["GEOMTURBO"]["CHANNEL_0"][channel_curve_name].items():
+            if "VERTEX" in key and "1" in item.value[1]:
+                curve_name = item.value[0]
+                curve = basic_curve_dict[curve_name][1]
+
+                print(f"{curve_name} {item.value[1]}")
+
+                if len(curve_array_list) == 0:
+                    print("passo qui")
                     curve_array = np.vstack(
                         [
                             np.zeros(curve.numberOfPoints),
@@ -786,11 +787,20 @@ class numecaParser(OrderedDict):
                             zeros_or_ones(curve.numberOfPoints),
                         ]
                     ).transpose()
-                    curve_array = np.expand_dims(curve_array, axis=0)
-                    curve_array_list.append(curve_array)
                 else:
-                    avoid_first_occurrence = False
-        return curve_array_list
+                    print("passo la")
+                    curve_array = np.vstack(
+                        [
+                            np.zeros(curve.numberOfPoints - 1),
+                            curve.R[1:], 
+                            curve.Z[1:], 
+                            zeros_or_ones(curve.numberOfPoints - 1),
+                        ]
+                    ).transpose()
+
+                print(curve_array)
+                curve_array_list.append(curve_array)
+        return np.vstack(curve_array_list)
 
     def exportZRNpyArraysList(self):
         hub_array_list = self.extractChannelCurves("channel_curve_hub_0")
