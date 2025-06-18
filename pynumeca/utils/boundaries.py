@@ -116,6 +116,7 @@ class Boundaries(object):
     def psi_t(self, torque: float, omega: float, de: float, eta: float) -> float:
         """
         Compute the work coefficient.
+        Not correct because it uses eta and not beta
 
         Parameters:
             - torque (float): Torque
@@ -131,7 +132,8 @@ class Boundaries(object):
     def psi_p(self, power: float, omega: float, de: float, eta: float) -> float:
         """
         Compute the work coefficient.
-
+        Not correct because it uses eta and not beta
+        
         Parameters:
             - power (float): Power
             - omega (float): Angular velocity
